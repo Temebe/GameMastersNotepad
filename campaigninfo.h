@@ -1,20 +1,22 @@
 #ifndef CAMPAIGNINFO_H
 #define CAMPAIGNINFO_H
 
+#include "gmnserializable.h"
+
 #include <QDateTime>
 #include <QJsonDocument>
 #include <QString>
 
 
 
-class CampaignInfo
+class CampaignInfo : public GMNSerializable
 {
 public:
-    CampaignInfo();
+    CampaignInfo() = default;
     CampaignInfo(const QString &path);
 
-    bool loadFromJson(const QJsonDocument &doc);
-    QString serialize();
+    bool loadFromJsonDocument(const QJsonDocument &doc);
+    QJsonValue serialize() const;
 
     QString getName() const;
     void setName(const QString &value);

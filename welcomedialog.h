@@ -1,6 +1,8 @@
 #ifndef WELCOMEDIALOG_H
 #define WELCOMEDIALOG_H
 
+#include "gmnpaths.h"
+
 #include <QDialog>
 #include <QStandardItemModel>
 #include <QStandardPaths>
@@ -21,6 +23,10 @@ signals:
     void newCampaignChosen(QString name);
     void loadCampaignChosen(QString name);
 
+public slots:
+    void onSuccesfullCampaignLoad();
+    void onCampaignLoadError(QString message);
+
 private slots:
     void onCancelButtonClicked();
     void onCreateNewButtonClicked();
@@ -29,7 +35,6 @@ private slots:
 private:
     Ui::WelcomeDialog *ui;
     QStandardItemModel campaignsModel;
-    const QString defaultCampaignsFolder = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/" + "GMNCampaigns";
 
     void populateCampaigns();
     void configureTableView();

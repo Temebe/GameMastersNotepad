@@ -3,11 +3,6 @@
 #include <QFile>
 #include <QJsonObject>
 
-CampaignInfo::CampaignInfo()
-{
-
-}
-
 CampaignInfo::CampaignInfo(const QString &path)
 {
     QFile file(path);
@@ -19,52 +14,27 @@ CampaignInfo::CampaignInfo(const QString &path)
     auto fileContent = file.readAll();
     file.close();
 
-    auto jsonDoc = QJsonDocument::fromJson(fileContent);
-    if (!loadFromJson(jsonDoc)) {
+    if (!loadFromJson(fileContent)) {
         throw std::runtime_error("Your information file is corrupted: " + path.toStdString());
     }
 }
 
-bool CampaignInfo::loadFromJson(const QJsonDocument &doc)
+bool CampaignInfo::loadFromJsonDocument(const QJsonDocument &doc)
 {
-    auto nameJson = doc[nameKey];
-    if (nameJson == QJsonValue::Undefined) {
-        return false;
-    }
-    setName(nameJson.toString());
-
-    auto creationDateJson = doc[creationDateKey];
-    if (creationDateJson == QJsonValue::Undefined) {
-        return false;
-    }
-    auto creationDate = QDateTime::fromString(creationDateJson.toString(), Qt::ISODate);
-    if (!creationDate.isValid()) {
-        return false;
-    }
-    setCreationDate(creationDate);
-
-    auto lastOpenedDateJson = doc[lastOpenedDateKey];
-    if (lastOpenedDateJson == QJsonValue::Undefined) {
-        return false;
-    }
-    auto lastOpenedDate = QDateTime::fromString(lastOpenedDateJson.toString(), Qt::ISODate);
-    if (!lastOpenedDate.isValid()) {
-        return false;
-    }
-    setLastOpenedDate(lastOpenedDate);
-
-    return true;
+    return loadQString<CampaignInfo>(doc[nameKey], this, &CampaignInfo::setName)
+            && loadQDateTime<CampaignInfo>(doc[creationDateKey], this, &CampaignInfo::setCreationDate)
+            && loadQDateTime<CampaignInfo>(doc[lastOpenedDateKey], this, &CampaignInfo::setLastOpenedDate);
 }
 
-QString CampaignInfo::serialize()
+QJsonValue CampaignInfo::serialize() const
 {
-    QJsonObject serialized;
+    QJsonObject serialized {
+        {nameKey, getName()},
+        {creationDateKey, getCreationDate().toString(Qt::ISODate)},
+        {lastOpenedDateKey, getLastOpenedDate().toString(Qt::ISODate)}
+    };
 
-    serialized[nameKey] = getName();
-    serialized[creationDateKey] = getCreationDate().toString(Qt::ISODate);
-    serialized[lastOpenedDateKey] = getLastOpenedDate().toString(Qt::ISODate);
-
-    return QJsonDocument(serialized).toJson();
+    return serialized;
 }
 
 QString CampaignInfo::getName() const

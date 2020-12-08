@@ -3,9 +3,9 @@
 #include "campaigninfo.h"
 
 #include <QDirIterator>
+#include <QErrorMessage>
 #include <QInputDialog>
 #include <QStandardPaths>
-//#include <Q
 
 WelcomeDialog::WelcomeDialog(QWidget *parent) :
     QDialog(parent),
@@ -18,6 +18,16 @@ WelcomeDialog::WelcomeDialog(QWidget *parent) :
 WelcomeDialog::~WelcomeDialog()
 {
     delete ui;
+}
+
+void WelcomeDialog::onSuccesfullCampaignLoad()
+{
+    close();
+}
+
+void WelcomeDialog::onCampaignLoadError(QString message)
+{
+    QErrorMessage().showMessage(message);
 }
 
 void WelcomeDialog::onCancelButtonClicked()
@@ -45,7 +55,7 @@ void WelcomeDialog::onCreateNewButtonClicked()
         return;
     }
 
-    while(QFile::exists(defaultCampaignsFolder + "/" + campaignName) || campaignName.isEmpty()) {
+    while(QFile::exists(GMN::campaignsFolder + "/" + campaignName) || campaignName.isEmpty()) {
         if (campaignName.isEmpty()) {
             campaignName = getName(tr("Empty name was given! Write down name for campaign:"));
         } else {
@@ -62,13 +72,21 @@ void WelcomeDialog::onCreateNewButtonClicked()
 
 void WelcomeDialog::onLoadFromListButtonClicked()
 {
+    auto selectedRows = ui->campaignsTableView->selectionModel()->selectedRows();
+    if (selectedRows.isEmpty()) {
+        return;
+    }
 
+    auto selectedRow = selectedRows.first().row();
+    auto selectedName = campaignsModel.index(selectedRow, 0);
+    auto campaignName = campaignsModel.data(selectedName).toString();
+    emit loadCampaignChosen(campaignName);
 }
 
 void WelcomeDialog::populateCampaigns()
 {
     configureTableView();
-    QDirIterator it(defaultCampaignsFolder);
+    QDirIterator it(GMN::campaignsFolder);
     int row = 0;
 
     while(it.hasNext()) {

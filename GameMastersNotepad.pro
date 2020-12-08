@@ -9,13 +9,22 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    campaign.cpp \
     campaigninfo.cpp \
+    character.cpp \
+    characterslistmodel.cpp \
     main.cpp \
     mainwindow.cpp \
     welcomedialog.cpp
 
 HEADERS += \
+    campaign.h \
     campaigninfo.h \
+    character.h \
+    characterslistmodel.h \
+    gmnpaths.h \
+    gmnserializable.h \
+    gmnutils.h \
     mainwindow.h \
     welcomedialog.h
 
@@ -30,3 +39,6 @@ TRANSLATIONS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    resources.qrc
