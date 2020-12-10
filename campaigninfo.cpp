@@ -19,6 +19,35 @@ CampaignInfo::CampaignInfo(const QString &path)
     }
 }
 
+CampaignInfo::CampaignInfo(const CampaignInfo &other)
+    : name(other.name),
+      creationDate(other.creationDate),
+      lastOpenedDate(other.lastOpenedDate)
+{
+
+}
+
+CampaignInfo::CampaignInfo(CampaignInfo &&other)
+    : name(std::exchange(other.name, nullptr)),
+      creationDate(std::exchange(other.creationDate, QDateTime())),
+      lastOpenedDate(std::exchange(other.lastOpenedDate, QDateTime()))
+{
+
+}
+
+CampaignInfo &CampaignInfo::operator=(const CampaignInfo &other)
+{
+    return *this = CampaignInfo(other);
+}
+
+CampaignInfo &CampaignInfo::operator=(CampaignInfo &&other)
+{
+    std::swap(name, other.name);
+    std::swap(creationDate, other.creationDate);
+    std::swap(lastOpenedDate, other.lastOpenedDate);
+    return *this;
+}
+
 bool CampaignInfo::loadFromJsonDocument(const QJsonDocument &doc)
 {
     return loadQString<CampaignInfo>(doc[nameKey], this, &CampaignInfo::setName)

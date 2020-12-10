@@ -1,31 +1,33 @@
-#include "characterslistmodel.h"
+#include "charactersmodel.h"
 
 #include <limits>
 
-CharactersListModel::CharactersListModel()
+CharactersModel::CharactersModel()
 {
 
 }
 
-int CharactersListModel::rowCount(const QModelIndex &parent) const
+int CharactersModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return characters.size();
 }
 
-int CharactersListModel::columnCount(const QModelIndex &parent) const
+int CharactersModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
     return Character::elementsCount();
 }
 
-QVariant CharactersListModel::data(const QModelIndex &index, int role) const
+QVariant CharactersModel::data(const QModelIndex &index, int role) const
 {
-    Q_UNUSED(role)
+    if (role != Qt::DisplayRole) {
+        return {};
+    }
 
     auto row = static_cast<size_t>(index.row() >= 0 ? index.row() : std::numeric_limits<size_t>::max());
     if (row > characters.size()) {
-        return QVariant();
+        return {};
     }
 
     auto character = characters.at(index.row());
@@ -47,16 +49,14 @@ QVariant CharactersListModel::data(const QModelIndex &index, int role) const
     case CharacterElement::RACE:
         return character.getRace();
     default:
-        return QVariant();
+        return {};
     }
 }
 
-QVariant CharactersListModel::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant CharactersModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    Q_UNUSED(role)
-
-    if (orientation == Qt::Vertical) {
-        return QVariant();
+    if (orientation == Qt::Vertical || role != Qt::DisplayRole) {
+        return {};
     }
 
     auto column = static_cast<CharacterElement>(section);
@@ -77,21 +77,63 @@ QVariant CharactersListModel::headerData(int section, Qt::Orientation orientatio
     case CharacterElement::RACE:
         return tr("Race");
     default:
-        return QVariant();
+        return {};
     }
 }
 
-bool CharactersListModel::setData(const QModelIndex &index, const QVariant &value, int role)
+bool CharactersModel::setData(int row, const CharacterElement element, const QString &value)
 {
-    Q_UNUSED(role)
+    QModelIndex modelIndex;
+
+    switch (element) {
+    case CharacterElement::AGE:
+        modelIndex = index(row, Character::elementToInt(CharacterElement::AGE));
+        break;
+
+    case CharacterElement::NAME:
+        modelIndex = index(row, Character::elementToInt(CharacterElement::NAME));
+        break;
+
+    case CharacterElement::BACKSTORY:
+        modelIndex = index(row, Character::elementToInt(CharacterElement::BACKSTORY));
+        break;
+
+    case CharacterElement::DESCRIPTION:
+        modelIndex = index(row, Character::elementToInt(CharacterElement::DESCRIPTION));
+        break;
+
+    case CharacterElement::NOTES:
+        modelIndex = index(row, Character::elementToInt(CharacterElement::NOTES));
+        break;
+
+    case CharacterElement::PROFESSION:
+        modelIndex = index(row, Character::elementToInt(CharacterElement::PROFESSION));
+        break;
+
+    case CharacterElement::RACE:
+        modelIndex = index(row, Character::elementToInt(CharacterElement::RACE));
+        break;
+
+    default:
+        return false;
+    }
+
+    return setData(modelIndex, value, Qt::DisplayRole);
+}
+
+bool CharactersModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    if (!index.isValid()) {
+        return false;
+    }
 
     auto row = static_cast<size_t>(index.row() >= 0 ? index.row() : std::numeric_limits<size_t>::max());
-    if (row > characters.size() or value.canConvert(QMetaType::QString)) {
+    if (row > characters.size() or !value.canConvert(QMetaType::QString) or role != Qt::DisplayRole) {
         return false;
     }
 
     QString stringValue = value.toString();
-    auto character = characters.at(index.row());
+    auto& character = characters.at(index.row());
     auto column = static_cast<CharacterElement>(index.column());
 
     switch (column) {
@@ -130,7 +172,7 @@ bool CharactersListModel::setData(const QModelIndex &index, const QVariant &valu
     return true;
 }
 
-bool CharactersListModel::insertRows(int position, int rows, const QModelIndex &index)
+bool CharactersModel::insertRows(int position, int rows, const QModelIndex &index)
 {
     Q_UNUSED(index);
     auto unsignedPosition = static_cast<size_t>(position >= 0 ? position : std::numeric_limits<size_t>::max());
@@ -147,7 +189,7 @@ bool CharactersListModel::insertRows(int position, int rows, const QModelIndex &
 }
 
 // TODO I bet there is simpler way
-bool CharactersListModel::removeRows(int position, int rows, const QModelIndex &index)
+bool CharactersModel::removeRows(int position, int rows, const QModelIndex &index)
 {
     Q_UNUSED(index);
     auto unsignedPosition = static_cast<size_t>(position >= 0 ? position : std::numeric_limits<size_t>::max());
@@ -162,14 +204,14 @@ bool CharactersListModel::removeRows(int position, int rows, const QModelIndex &
     beginRemoveRows(QModelIndex(), position, position + rows - 1);
 
     auto begin = characters.begin() + position;
-    auto end = characters.begin() + position + rows - 1;
+    auto end = characters.begin() + position + rows;
     characters.erase(begin, end);
 
     endRemoveRows();
     return true;
 }
 
-bool CharactersListModel::loadFromJsonDocument(const QJsonDocument &doc)
+bool CharactersModel::loadFromJsonDocument(const QJsonDocument &doc)
 {
     if (!doc.isArray()) {
         return false;
@@ -190,7 +232,7 @@ bool CharactersListModel::loadFromJsonDocument(const QJsonDocument &doc)
     return true;
 }
 
-QJsonValue CharactersListModel::serialize() const
+QJsonValue CharactersModel::serialize() const
 {
     QJsonArray array;
     for (const auto& character : characters) {
@@ -200,7 +242,25 @@ QJsonValue CharactersListModel::serialize() const
     return array;
 }
 
-Qt::ItemFlags CharactersListModel::flags(const QModelIndex &index) const
+std::optional<Character> CharactersModel::getCharacter(const QModelIndex &index)
+{
+    auto position = index.row();
+    if (position < 0 || position >= characters.size()) {
+        return {};
+    }
+
+    return characters.at(position);
+}
+
+QModelIndex CharactersModel::addCharacter(const QString &name)
+{
+    auto newRow = characters.size();
+    insertRow(newRow);
+    (--characters.end())->setName(name);
+    return index(newRow, 0);
+}
+
+Qt::ItemFlags CharactersModel::flags(const QModelIndex &index) const
 {
     if (!index.isValid()) {
         return Qt::ItemIsEnabled;
@@ -209,7 +269,17 @@ Qt::ItemFlags CharactersListModel::flags(const QModelIndex &index) const
     return QAbstractTableModel::flags(index) | Qt::ItemIsEditable;
 }
 
-void CharactersListModel::clear()
+void CharactersModel::clear()
 {
 
+}
+
+bool CharactersModel::isEmpty() const
+{
+    return characters.empty();
+}
+
+size_t CharactersModel::getSize() const
+{
+    return characters.size();
 }

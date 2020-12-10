@@ -51,6 +51,34 @@ public:
     void setNotes(const QString &value);
 
     static constexpr int elementsCount() {return 7;}
+    static constexpr int elementToInt(const CharacterElement element)
+    {
+       switch (element) {
+       case CharacterElement::AGE:
+           return static_cast<int>(CharacterElement::AGE);
+
+       case CharacterElement::NAME:
+           return static_cast<int>(CharacterElement::NAME);
+
+       case CharacterElement::BACKSTORY:
+           return static_cast<int>(CharacterElement::BACKSTORY);
+
+       case CharacterElement::DESCRIPTION:
+           return static_cast<int>(CharacterElement::DESCRIPTION);
+
+       case CharacterElement::NOTES:
+           return static_cast<int>(CharacterElement::NOTES);
+
+       case CharacterElement::PROFESSION:
+           return static_cast<int>(CharacterElement::PROFESSION);
+
+       case CharacterElement::RACE:
+           return static_cast<int>(CharacterElement::RACE);
+       default:
+
+           return -1;
+       }
+    }
 
 private:
     QString name;

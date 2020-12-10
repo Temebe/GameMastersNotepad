@@ -1,8 +1,10 @@
 #ifndef GMNUTILS_H
 #define GMNUTILS_H
 
+#include <QObject>
 #include <QFile>
 #include <QString>
+#include <QTextStream>
 
 namespace GMN {
     std::optional<QString> loadJsonFile(const QString &filePath) {
@@ -15,6 +17,18 @@ namespace GMN {
         auto fileContent = file.readAll();
         file.close();
         return fileContent;
+    }
+
+    bool saveToFile(const QString &path, const QString &content) {
+        QFile saveFile(path);
+        if (!saveFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+            return false;
+        }
+
+        QTextStream out(&saveFile);
+        out << content;
+        saveFile.close();
+        return true;
     }
 }
 

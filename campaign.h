@@ -3,10 +3,12 @@
 
 #include "campaigninfo.h"
 #include "character.h"
-#include "characterslistmodel.h"
+#include "charactersmodel.h"
 
 #include <QAbstractItemView>
 #include <QObject>
+
+#include <memory>
 
 class Campaign : public QObject
 {
@@ -14,18 +16,29 @@ class Campaign : public QObject
 public:
     Campaign(QObject *parent = nullptr);
     ~Campaign() = default;
+    Campaign(const Campaign& other);
+    Campaign(Campaign&& other);
+    Campaign& operator=(const Campaign& other);
+    Campaign& operator=(Campaign&& other);
+
     void createNewCampaign(const QString &name);
     void loadFromName(const QString &name);
     void loadFromPath(const QString &path);
-    void passCharactersModel(QAbstractItemView *itemView);
 
+    void saveToFile(const std::unique_ptr<CharactersModel>& charactersModel = nullptr);
+    void saveInfoFile();
+    void saveCharactersToFile(const std::unique_ptr<CharactersModel>& charactersModel);
+
+
+    std::unique_ptr<CharactersModel> createCharactersModel();
 signals:
     void succesfullyLoaded();
-    void loadingFailed(QString reason);
+    void loadingFailed(const QString& reason);
+    void savingFailed(const QString& reason);
 
 private:
     CampaignInfo campaignInfo;
-    CharactersListModel characters;
+    QString path;
 
     void clear();
 };

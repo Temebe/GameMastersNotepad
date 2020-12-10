@@ -12,7 +12,7 @@ SOURCES += \
     campaign.cpp \
     campaigninfo.cpp \
     character.cpp \
-    characterslistmodel.cpp \
+    charactersmodel.cpp \
     main.cpp \
     mainwindow.cpp \
     welcomedialog.cpp
@@ -21,7 +21,7 @@ HEADERS += \
     campaign.h \
     campaigninfo.h \
     character.h \
-    characterslistmodel.h \
+    charactersmodel.h \
     gmnpaths.h \
     gmnserializable.h \
     gmnutils.h \

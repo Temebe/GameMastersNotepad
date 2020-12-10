@@ -40,25 +40,26 @@
         <item>
          <layout class="QVBoxLayout" name="verticalLayout_5">
           <item>
-           <widget class="QListView" name="charactersListView"/>
+           <widget class="QListView" name="charactersListView">
+            <property name="modelColumn">
+             <number>0</number>
+            </property>
+           </widget>
           </item>
           <item>
-           <widget class="QTableView" name="tableView"/>
-          </item>
-          <item>
-           <widget class="QLineEdit" name="lineEdit"/>
+           <widget class="QLineEdit" name="lineEditSearchCharacter"/>
           </item>
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
-             <widget class="QPushButton" name="pushButton_2">
+             <widget class="QPushButton" name="buttonAddNew">
               <property name="text">
                <string>Add new</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="pushButton">
+             <widget class="QPushButton" name="buttonRemove">
               <property name="text">
                <string>Remove</string>
               </property>
@@ -216,30 +217,82 @@
      <height>20</height>
     </rect>
    </property>
-   <widget class="QMenu" name="menuad">
+   <widget class="QMenu" name="menuFile">
     <property name="title">
      <string>File</string>
     </property>
     <addaction name="separator"/>
     <addaction name="separator"/>
-    <addaction name="actiondsf"/>
+    <addaction name="saveAction"/>
    </widget>
-   <addaction name="menuad"/>
+   <addaction name="menuFile"/>
   </widget>
   <widget class="QStatusBar" name="statusbar"/>
-  <action name="actiondsf">
+  <action name="saveAction">
    <property name="text">
     <string>Save</string>
    </property>
-  </action>
-  <action name="actionghol">
-   <property name="text">
-    <string>ghol</string>
+   <property name="shortcut">
+    <string>Ctrl+S</string>
    </property>
   </action>
  </widget>
  <resources>
   <include location="resources.qrc"/>
  </resources>
- <connections/>
+ <connections>
+  <connection>
+   <sender>lineEditSearchCharacter</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onCharactersSearchTextChanged(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>148</x>
+     <y>406</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>403</x>
+     <y>245</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonRemove</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onRemoveCharacterClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>213</x>
+     <y>436</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>403</x>
+     <y>245</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonAddNew</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onAddCharacterClicked()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>83</x>
+     <y>436</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>403</x>
+     <y>245</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+ <slots>
+  <slot>onCharactersSearchTextChanged(QString)</slot>
+  <slot>onRemoveCharacterClicked()</slot>
+  <slot>onAddCharacterClicked()</slot>
+ </slots>
 </ui>
