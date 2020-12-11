@@ -11,6 +11,7 @@ Character::Character(const Character &other)
     setNotes(other.getNotes());
     setProfession(other.getProfession());
     setRace(other.getRace());
+    setImagePath(other.getImagePath());
 }
 
 Character::Character(Character &&other)
@@ -20,7 +21,8 @@ Character::Character(Character &&other)
       profession(std::exchange(other.profession, nullptr)),
       backstory(std::exchange(other.backstory, nullptr)),
       description(std::exchange(other.description, nullptr)),
-      notes(std::exchange(other.notes, nullptr))
+      notes(std::exchange(other.notes, nullptr)),
+      imagePath(std::exchange(other.imagePath, nullptr))
 {
 
 }
@@ -39,18 +41,22 @@ Character &Character::operator=(Character &&other)
     std::swap(backstory, other.backstory);
     std::swap(notes, other.notes);
     std::swap(profession, other.profession);
+    std::swap(imagePath, other.imagePath);
     return *this;
 }
 
 bool Character::loadFromJsonDocument(const QJsonDocument &doc)
 {
-    return loadQString<Character>(doc[nameKey], this, &Character::setName)
-            && loadQString<Character>(doc[ageKey], this, &Character::setAge)
-            && loadQString<Character>(doc[raceKey], this, &Character::setRace)
-            && loadQString<Character>(doc[professionKey], this, &Character::setProfession)
-            && loadQString<Character>(doc[backstoryKey], this, &Character::setBackstory)
-            && loadQString<Character>(doc[descriptionKey], this, &Character::setDescription)
-            && loadQString<Character>(doc[notesKey], this, &Character::setNotes);
+    if (!loadQString<Character>(doc[nameKey], this, &Character::setName)) {
+        return false;
+    }
+    loadQString<Character>(doc[ageKey], this, &Character::setAge);
+    loadQString<Character>(doc[raceKey], this, &Character::setRace);
+    loadQString<Character>(doc[professionKey], this, &Character::setProfession);
+    loadQString<Character>(doc[backstoryKey], this, &Character::setBackstory);
+    loadQString<Character>(doc[descriptionKey], this, &Character::setDescription);
+    loadQString<Character>(doc[notesKey], this, &Character::setNotes);
+    loadQString<Character>(doc[imagePathKey], this, &Character::setImagePath);
     return true;
 }
 
@@ -63,7 +69,8 @@ QJsonValue Character::serialize() const
         {professionKey, getProfession()},
         {backstoryKey, getBackstory()},
         {descriptionKey, getDescription()},
-        {notesKey, getNotes()}
+        {notesKey, getNotes()},
+        {imagePathKey, getImagePath()}
     };
 
     return serialized;
@@ -137,4 +144,14 @@ QString Character::getNotes() const
 void Character::setNotes(const QString &value)
 {
     notes = value;
+}
+
+QString Character::getImagePath() const
+{
+    return imagePath;
+}
+
+void Character::setImagePath(const QString &value)
+{
+    imagePath = value;
 }

@@ -48,6 +48,8 @@ QVariant CharactersModel::data(const QModelIndex &index, int role) const
         return character.getProfession();
     case CharacterElement::RACE:
         return character.getRace();
+    case CharacterElement::IMAGEPATH:
+        return character.getImagePath();
     default:
         return {};
     }
@@ -76,6 +78,8 @@ QVariant CharactersModel::headerData(int section, Qt::Orientation orientation, i
         return tr("Profession");
     case CharacterElement::RACE:
         return tr("Race");
+    case CharacterElement::IMAGEPATH:
+        return tr("Image Path");
     default:
         return {};
     }
@@ -112,6 +116,10 @@ bool CharactersModel::setData(int row, const CharacterElement element, const QSt
 
     case CharacterElement::RACE:
         modelIndex = index(row, Character::elementToInt(CharacterElement::RACE));
+        break;
+
+    case CharacterElement::IMAGEPATH:
+        modelIndex = index(row, Character::elementToInt(CharacterElement::IMAGEPATH));
         break;
 
     default:
@@ -163,6 +171,10 @@ bool CharactersModel::setData(const QModelIndex &index, const QVariant &value, i
 
     case CharacterElement::RACE:
         character.setRace(stringValue);
+        break;
+
+    case CharacterElement::IMAGEPATH:
+        character.setImagePath(stringValue);
         break;
     default:
         return false;
@@ -244,7 +256,7 @@ QJsonValue CharactersModel::serialize() const
 
 std::optional<Character> CharactersModel::getCharacter(const QModelIndex &index)
 {
-    auto position = index.row();
+    auto position = static_cast<size_t>(index.row() >= 0 ? index.row() : std::numeric_limits<size_t>::max());
     if (position < 0 || position >= characters.size()) {
         return {};
     }

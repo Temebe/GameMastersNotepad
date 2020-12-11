@@ -7,6 +7,7 @@
 #include <QJsonArray>
 #include <QString>
 #include <QDateTime>
+#include <QDir>
 
 class GMNSerializable
 {

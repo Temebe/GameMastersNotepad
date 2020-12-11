@@ -13,7 +13,8 @@ enum class CharacterElement {
     PROFESSION,
     BACKSTORY,
     DESCRIPTION,
-    NOTES
+    NOTES,
+    IMAGEPATH
 };
 
 class Character : public GMNSerializable
@@ -50,35 +51,11 @@ public:
     QString getNotes() const;
     void setNotes(const QString &value);
 
-    static constexpr int elementsCount() {return 7;}
-    static constexpr int elementToInt(const CharacterElement element)
-    {
-       switch (element) {
-       case CharacterElement::AGE:
-           return static_cast<int>(CharacterElement::AGE);
+    QString getImagePath() const;
+    void setImagePath(const QString &value);
 
-       case CharacterElement::NAME:
-           return static_cast<int>(CharacterElement::NAME);
-
-       case CharacterElement::BACKSTORY:
-           return static_cast<int>(CharacterElement::BACKSTORY);
-
-       case CharacterElement::DESCRIPTION:
-           return static_cast<int>(CharacterElement::DESCRIPTION);
-
-       case CharacterElement::NOTES:
-           return static_cast<int>(CharacterElement::NOTES);
-
-       case CharacterElement::PROFESSION:
-           return static_cast<int>(CharacterElement::PROFESSION);
-
-       case CharacterElement::RACE:
-           return static_cast<int>(CharacterElement::RACE);
-       default:
-
-           return -1;
-       }
-    }
+    static constexpr int elementsCount() {return 8;}
+    static constexpr int elementToInt(const CharacterElement element);
 
 private:
     QString name;
@@ -101,6 +78,41 @@ private:
 
     QString notes;
     const QString notesKey = "notes";
+
+    QString imagePath;
+    const QString imagePathKey = "image";
 };
+
+constexpr int Character::elementToInt(const CharacterElement element)
+{
+   switch (element) {
+   case CharacterElement::AGE:
+       return static_cast<int>(CharacterElement::AGE);
+
+   case CharacterElement::NAME:
+       return static_cast<int>(CharacterElement::NAME);
+
+   case CharacterElement::BACKSTORY:
+       return static_cast<int>(CharacterElement::BACKSTORY);
+
+   case CharacterElement::DESCRIPTION:
+       return static_cast<int>(CharacterElement::DESCRIPTION);
+
+   case CharacterElement::NOTES:
+       return static_cast<int>(CharacterElement::NOTES);
+
+   case CharacterElement::PROFESSION:
+       return static_cast<int>(CharacterElement::PROFESSION);
+
+   case CharacterElement::RACE:
+       return static_cast<int>(CharacterElement::RACE);
+
+   case CharacterElement::IMAGEPATH:
+       return static_cast<int>(CharacterElement::IMAGEPATH);
+   default:
+
+       return -1;
+   }
+}
 
 #endif // CHARACTER_H

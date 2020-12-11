@@ -31,6 +31,7 @@ private slots:
     void onCancelButtonClicked();
     void onCreateNewButtonClicked();
     void onLoadFromListButtonClicked();
+    void onDoubleClickedName(const QModelIndex &index);
 
 private:
     Ui::WelcomeDialog *ui;

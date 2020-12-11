@@ -178,10 +178,27 @@ p, li { white-space: pre-wrap; }
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>campaignsTableView</sender>
+   <signal>doubleClicked(QModelIndex)</signal>
+   <receiver>WelcomeDialog</receiver>
+   <slot>onDoubleClickedName(QModelIndex)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>249</x>
+     <y>171</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>249</x>
+     <y>149</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCancelButtonClicked()</slot>
   <slot>onCreateNewButtonClicked()</slot>
   <slot>onLoadFromListButtonClicked()</slot>
+  <slot>onDoubleClickedName(QModelIndex)</slot>
  </slots>
 </ui>

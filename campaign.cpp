@@ -11,6 +11,7 @@
 #include <QDateTime>
 #include <QMessageBox>
 #include <QTextStream>
+#include <QDir>
 
 Campaign::Campaign(QObject *parent)
     : QObject(parent)
@@ -49,14 +50,19 @@ Campaign &Campaign::operator=(Campaign &&other)
 void Campaign::createNewCampaign(const QString &name)
 {
     clear();
-    if (QFile::exists(GMN::campaignsFolder + "/" + name + "/" + GMN::infoFileName)) {
-        emit loadingFailed("Project under given name already exists in default path.");
+    path = GMN::campaignsFolder + "/" + name;
+    QString newCampaignInfoPath = path + "/" + GMN::infoFileName;
+    if (QFile::exists(newCampaignInfoPath)) {
+        emit loadingFailed(tr("Project under given name already exists in default path."),
+                           tr("File %1 already exists").arg(newCampaignInfoPath));
+        return;
     }
 
     QDateTime currentDateTime = QDateTime::currentDateTime();
     campaignInfo.setCreationDate(currentDateTime);
     campaignInfo.setLastOpenedDate(currentDateTime);
     campaignInfo.setName(name);
+    saveToFile();
     emit succesfullyLoaded();
 }
 
@@ -77,11 +83,15 @@ void Campaign::loadFromPath(const QString &path)
         emit loadingFailed(QObject::tr("Information file of campaign is corrupted"));
     }
 
+    campaignInfo.setLastOpenedDate(QDateTime::currentDateTime());
+    saveInfoFile();
     emit succesfullyLoaded();
 }
 
 void Campaign::saveToFile(const std::unique_ptr<CharactersModel> &charactersModel)
 {
+    QDir().mkpath(path);
+    QDir().mkpath(path + "/" + GMN::imagesFolderName);
     saveInfoFile();
     saveCharactersToFile(charactersModel);
 }
@@ -104,7 +114,7 @@ void Campaign::saveCharactersToFile(const std::unique_ptr<CharactersModel> &char
     }
 }
 
-std::unique_ptr<CharactersModel> Campaign::createCharactersModel()
+std::unique_ptr<CharactersModel> Campaign::createCharactersModel() const
 {
     auto model = std::make_unique<CharactersModel>();
     std::optional<QString> charactersFile = GMN::loadJsonFile(path + "/" + GMN::charactersFileName);
@@ -114,6 +124,16 @@ std::unique_ptr<CharactersModel> Campaign::createCharactersModel()
     }
 
     return model;
+}
+
+QString Campaign::getPath() const
+{
+    return path;
+}
+
+QDir Campaign::getDir() const
+{
+    return QDir(getPath());
 }
 
 void Campaign::clear()

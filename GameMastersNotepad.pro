@@ -13,6 +13,7 @@ SOURCES += \
     campaigninfo.cpp \
     character.cpp \
     charactersmodel.cpp \
+    clickableimagelabel.cpp \
     main.cpp \
     mainwindow.cpp \
     welcomedialog.cpp
@@ -22,6 +23,7 @@ HEADERS += \
     campaigninfo.h \
     character.h \
     charactersmodel.h \
+    clickableimagelabel.h \
     gmnpaths.h \
     gmnserializable.h \
     gmnutils.h \

@@ -30,11 +30,14 @@ public:
     void saveCharactersToFile(const std::unique_ptr<CharactersModel>& charactersModel);
 
 
-    std::unique_ptr<CharactersModel> createCharactersModel();
+    std::unique_ptr<CharactersModel> createCharactersModel() const;
+    QString getPath() const;
+    QDir getDir() const;
+
 signals:
     void succesfullyLoaded();
-    void loadingFailed(const QString& reason);
-    void savingFailed(const QString& reason);
+    void loadingFailed(const QString& reason, const QString& details = QString());
+    void savingFailed(const QString& reason, const QString& details = QString());
 
 private:
     CampaignInfo campaignInfo;

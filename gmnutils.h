@@ -4,6 +4,7 @@
 #include <QObject>
 #include <QFile>
 #include <QString>
+#include <QPixmap>
 #include <QTextStream>
 
 namespace GMN {

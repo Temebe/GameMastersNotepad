@@ -72,14 +72,20 @@ void WelcomeDialog::onCreateNewButtonClicked()
 
 void WelcomeDialog::onLoadFromListButtonClicked()
 {
-    auto selectedRows = ui->campaignsTableView->selectionModel()->selectedRows();
-    if (selectedRows.isEmpty()) {
+    auto currentIndex = ui->campaignsTableView->selectionModel()->currentIndex();
+    if (!currentIndex.isValid()) {
         return;
     }
 
-    auto selectedRow = selectedRows.first().row();
-    auto selectedName = campaignsModel.index(selectedRow, 0);
-    auto campaignName = campaignsModel.data(selectedName).toString();
+    auto nameIndex = currentIndex.siblingAtColumn(0);
+    auto campaignName = campaignsModel.data(nameIndex).toString();
+    emit loadCampaignChosen(campaignName);
+}
+
+void WelcomeDialog::onDoubleClickedName(const QModelIndex &index)
+{
+    auto nameIndex = index.siblingAtColumn(0);
+    auto campaignName = campaignsModel.data(nameIndex).toString();
     emit loadCampaignChosen(campaignName);
 }
 

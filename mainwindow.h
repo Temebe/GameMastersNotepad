@@ -28,14 +28,15 @@ public slots:
     void onCreateNewCampaignChosen(const QString& name);
     void onLoadCampaignChosen(const QString& name);
     void onCampaignReady();
-    void onSavingError(const QString& reason);
+    void onSavingError(const QString& reason, const QString& details);
 
 private slots:
-    void onCharacterNameClicked(const QModelIndex& index);
+    void onCharacterSelectionChanged(const QModelIndex& index, const QModelIndex &previousIndex = QModelIndex());
     void onCharactersSearchTextChanged(const QString& text);
     void onRemoveCharacterClicked();
     void onAddCharacterClicked();
     void onSaveTriggered();
+    void onCharacterImageClicked();
     void onCharacterChanged();
 
 
@@ -44,10 +45,14 @@ private:
     Campaign campaign;
     std::unique_ptr<CharactersModel> charactersModel;
     QSortFilterProxyModel charactersFilterModel;
+    bool characterChanged = false;
 
     void configureCharactersListView();
     void selectFirstCharacter();
     void showCharacter(const Character& character);
     void clearCharacterView();
+    void disableCharacterView();
+    void enableCharacterView();
+    void saveCurrentViewToCharacter(const QModelIndex& index);
 };
 #endif // MAINWINDOW_H
