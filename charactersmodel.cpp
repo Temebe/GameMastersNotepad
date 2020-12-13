@@ -2,7 +2,8 @@
 
 #include <limits>
 
-CharactersModel::CharactersModel()
+CharactersModel::CharactersModel(QObject *parent)
+    : QAbstractTableModel(parent)
 {
 
 }
@@ -26,7 +27,7 @@ QVariant CharactersModel::data(const QModelIndex &index, int role) const
     }
 
     auto row = static_cast<size_t>(index.row() >= 0 ? index.row() : std::numeric_limits<size_t>::max());
-    if (row > characters.size()) {
+    if (row >= characters.size()) {
         return {};
     }
 
@@ -126,17 +127,17 @@ bool CharactersModel::setData(int row, const CharacterElement element, const QSt
         return false;
     }
 
-    return setData(modelIndex, value, Qt::DisplayRole);
+    return setData(modelIndex, value, Qt::EditRole);
 }
 
 bool CharactersModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
-    if (!index.isValid()) {
+    if (!index.isValid() || role != Qt::EditRole) {
         return false;
     }
 
     auto row = static_cast<size_t>(index.row() >= 0 ? index.row() : std::numeric_limits<size_t>::max());
-    if (row > characters.size() or !value.canConvert(QMetaType::QString) or role != Qt::DisplayRole) {
+    if (row > characters.size() || !value.canConvert(QMetaType::QString)) {
         return false;
     }
 
@@ -176,6 +177,7 @@ bool CharactersModel::setData(const QModelIndex &index, const QVariant &value, i
     case CharacterElement::IMAGEPATH:
         character.setImagePath(stringValue);
         break;
+
     default:
         return false;
     }
@@ -257,7 +259,7 @@ QJsonValue CharactersModel::serialize() const
 std::optional<Character> CharactersModel::getCharacter(const QModelIndex &index)
 {
     auto position = static_cast<size_t>(index.row() >= 0 ? index.row() : std::numeric_limits<size_t>::max());
-    if (position < 0 || position >= characters.size()) {
+    if (position >= characters.size()) {
         return {};
     }
 
@@ -266,6 +268,9 @@ std::optional<Character> CharactersModel::getCharacter(const QModelIndex &index)
 
 QModelIndex CharactersModel::addCharacter(const QString &name)
 {
+    if (name.isEmpty()) {
+        return QModelIndex();
+    }
     auto newRow = characters.size();
     insertRow(newRow);
     (--characters.end())->setName(name);
@@ -274,6 +279,7 @@ QModelIndex CharactersModel::addCharacter(const QString &name)
 
 Qt::ItemFlags CharactersModel::flags(const QModelIndex &index) const
 {
+    //return Qt::ItemIsEnabled | Qt::ItemIsSelectable | Qt::ItemIsEditable;
     if (!index.isValid()) {
         return Qt::ItemIsEnabled;
     }

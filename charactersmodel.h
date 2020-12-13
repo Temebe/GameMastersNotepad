@@ -11,7 +11,7 @@ class CharactersModel : public QAbstractTableModel, public GMNSerializable
 {
     Q_OBJECT
 public:
-    CharactersModel();
+    CharactersModel(QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;

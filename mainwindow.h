@@ -25,19 +25,24 @@ signals:
     void loadingErrorOccured(const QString &reason);
 
 public slots:
-    void onCreateNewCampaignChosen(const QString& name);
-    void onLoadCampaignChosen(const QString& name);
-    void onCampaignReady();
-    void onSavingError(const QString& reason, const QString& details);
+    void createNewCampaign(const QString& name);
+    void loadCampaign(const QString& name);
+    void configureViews();
+    void showSavingError(const QString& reason, const QString& details);
+
+protected slots:
+    void closeEvent(QCloseEvent *event) override;
 
 private slots:
     void onCharacterSelectionChanged(const QModelIndex& index, const QModelIndex &previousIndex = QModelIndex());
     void onCharactersSearchTextChanged(const QString& text);
-    void onRemoveCharacterClicked();
-    void onAddCharacterClicked();
-    void onSaveTriggered();
-    void onCharacterImageClicked();
-    void onCharacterChanged();
+    void removeCharacter();
+    void addCharacter();
+    void saveCampaign();
+    void chooseCharacterImage();
+    void setCharacterChanged();
+    void showAboutApp();
+    void showAboutQt();
 
 
 private:
@@ -46,6 +51,8 @@ private:
     std::unique_ptr<CharactersModel> charactersModel;
     QSortFilterProxyModel charactersFilterModel;
     bool characterChanged = false;
+    bool campaignChanged = false;
+    bool savingView = false;
 
     void configureCharactersListView();
     void selectFirstCharacter();
@@ -53,6 +60,7 @@ private:
     void clearCharacterView();
     void disableCharacterView();
     void enableCharacterView();
+    void setDisabledCharacterView(const bool disabled);
     void saveCurrentViewToCharacter(const QModelIndex& index);
 };
 #endif // MAINWINDOW_H

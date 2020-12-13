@@ -8,6 +8,7 @@
 #include <QString>
 #include <QDateTime>
 #include <QDir>
+#include <QVariant>
 
 class GMNSerializable
 {
@@ -34,6 +35,15 @@ public:
     }
 
 protected:
+//    template<typename T, typename F>
+//    auto loadAndSet(const QJsonValue value, T &&object, F function) const {
+//        if (value.isUndefined()) {
+//            return false;
+//        }
+
+//        return std::invoke(function, object, value.toVariant().value<QString>());
+//    }
+
     template<typename T>
     bool loadQString(const QJsonValue value, T* object, std::function<void (T*, const QString&)> setterFunction) const {
         if (value.isUndefined()) {

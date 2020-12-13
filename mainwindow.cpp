@@ -1,4 +1,4 @@
-#include "mainwindow.h"
+﻿#include "mainwindow.h"
 #include "ui_mainwindow.h"
 
 #include "gmnpaths.h"
@@ -9,6 +9,7 @@
 #include <QAction>
 #include <QPixmap>
 #include <QFileDialog>
+#include <QCloseEvent>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent, Qt::Window)
@@ -27,77 +28,108 @@ void MainWindow::init()
     disableCharacterView();
 
     // CAMPAIGN CONNECTS
-    connect(&campaign, &Campaign::succesfullyLoaded, this, &MainWindow::onCampaignReady);
+    connect(&campaign, &Campaign::succesfullyLoaded, this, &MainWindow::configureViews);
     connect(&campaign, &Campaign::loadingFailed, this, &MainWindow::loadingErrorOccured);
-    connect(&campaign, &Campaign::savingFailed, this, &MainWindow::onSavingError);
+    connect(&campaign, &Campaign::savingFailed, this, &MainWindow::showSavingError);
 
     // ACTION CONNECTS
-    connect(ui->saveAction, &QAction::triggered, this, &MainWindow::onSaveTriggered);
+    connect(ui->actionSave, &QAction::triggered, this, &MainWindow::saveCampaign);
+    connect(ui->actionAboutApp, &QAction::triggered, this, &MainWindow::showAboutApp);
+    connect(ui->actionAboutQt, &QAction::triggered, this, &MainWindow::showAboutQt);
 
-    connect(ui->lineEditAge, &QLineEdit::textEdited, this, &MainWindow::onCharacterChanged);
-    connect(ui->lineEditName, &QLineEdit::textEdited, this, &MainWindow::onCharacterChanged);
-    connect(ui->lineEditRace, &QLineEdit::textEdited, this, &MainWindow::onCharacterChanged);
-    connect(ui->lineEditProfession, &QLineEdit::textEdited, this, &MainWindow::onCharacterChanged);
-    connect(ui->textEditBackstory, &QTextEdit::textChanged, this, &MainWindow::onCharacterChanged);
-    connect(ui->textEditDescription, &QTextEdit::textChanged, this, &MainWindow::onCharacterChanged);
-    connect(ui->textEditNotes, &QTextEdit::textChanged, this, &MainWindow::onCharacterChanged);
+    connect(ui->lineEditAge, &QLineEdit::textEdited, this, &MainWindow::setCharacterChanged);
+    connect(ui->lineEditName, &QLineEdit::textEdited, this, &MainWindow::setCharacterChanged);
+    connect(ui->lineEditRace, &QLineEdit::textEdited, this, &MainWindow::setCharacterChanged);
+    connect(ui->lineEditProfession, &QLineEdit::textEdited, this, &MainWindow::setCharacterChanged);
+    connect(ui->textEditBackstory, &QTextEdit::textChanged, this, &MainWindow::setCharacterChanged);
+    connect(ui->textEditDescription, &QTextEdit::textChanged, this, &MainWindow::setCharacterChanged);
+    connect(ui->textEditNotes, &QTextEdit::textChanged, this, &MainWindow::setCharacterChanged);
 
-    connect(ui->labelImage, &ClickableImageLabel::clicked, this, &MainWindow::onCharacterImageClicked);
+    connect(ui->labelImage, &ClickableImageLabel::clicked, this, &MainWindow::chooseCharacterImage);
 }
 
-void MainWindow::onCreateNewCampaignChosen(const QString& name)
+void MainWindow::createNewCampaign(const QString& name)
 {
     campaign.createNewCampaign(name);
 }
 
-void MainWindow::onLoadCampaignChosen(const QString& name)
+void MainWindow::loadCampaign(const QString& name)
 {
     campaign.loadFromName(name);
 }
 
-void MainWindow::onCampaignReady()
+void MainWindow::configureViews()
 {
     charactersModel = campaign.createCharactersModel();
     configureCharactersListView();
     if (!charactersModel->isEmpty()) {
         enableCharacterView();
     }
+    characterChanged = false;
+    campaignChanged = false;
     show();
     emit windowReady();
 }
 
-void MainWindow::onSavingError(const QString &reason, const QString& details)
+void MainWindow::showSavingError(const QString &reason, const QString& details)
 {
     Q_UNUSED(details);
     QMessageBox::critical(this, tr("Saving error"), reason);
 }
 
+void MainWindow::closeEvent(QCloseEvent *event)
+{
+    if (campaignChanged) {
+        auto clickedButton = QMessageBox::question(
+                    this,
+                    tr("Unsaved changes"),
+                    tr("You have unsaved changes, do you want to save them?"),
+                    QMessageBox::Yes | QMessageBox::No | QMessageBox::Cancel
+        );
+
+        if (clickedButton == QMessageBox::Cancel) {
+            event->ignore();
+            return;
+
+        } else if (clickedButton == QMessageBox::Yes) {
+            saveCampaign();
+        }
+    }
+
+    QMainWindow::closeEvent(event);
+}
+
 void MainWindow::onCharacterSelectionChanged(const QModelIndex &index, const QModelIndex &previousIndex)
 {
-    saveCurrentViewToCharacter(previousIndex);
-    auto characterOpt = charactersModel->getCharacter(index);
+    auto mappedIndex = charactersFilterModel.mapToSource(index);
+    auto mappedPreviousIndex = charactersFilterModel.mapToSource(previousIndex);
+
+    saveCurrentViewToCharacter(mappedPreviousIndex);
+    auto characterOpt = charactersModel->getCharacter(mappedIndex);
 
     if (!characterOpt) {
         clearCharacterView();
         disableCharacterView();
+        ui->buttonRemove->setDisabled(true);
         return;
     }
 
+    ui->buttonRemove->setDisabled(false);
     showCharacter(characterOpt.value());
 }
 
 void MainWindow::onCharactersSearchTextChanged(const QString& text)
 {
-
-        auto currentIndex = ui->charactersListView->selectionModel()->currentIndex();
-        saveCurrentViewToCharacter(currentIndex);
-
+    auto selectionModel = ui->charactersListView->selectionModel();
+    auto currentIndex = charactersFilterModel.mapToSource(selectionModel->currentIndex());
+    ui->charactersListView->selectionModel()->clearCurrentIndex();
     charactersFilterModel.setFilterRegExp(QRegExp(text, Qt::CaseSensitive, QRegExp::FixedString));
+    selectionModel->setCurrentIndex(charactersFilterModel.mapFromSource(currentIndex), QItemSelectionModel::ClearAndSelect);
 }
 
-void MainWindow::onRemoveCharacterClicked()
+void MainWindow::removeCharacter()
 {
-    auto currentIndex = ui->charactersListView->selectionModel()->currentIndex();
+    auto currentIndex = charactersFilterModel.mapToSource(ui->charactersListView->selectionModel()->currentIndex());
     auto characterName = charactersModel->getCharacter(currentIndex).value_or(Character()).getName();
 
     auto clickedButton = QMessageBox::question(
@@ -114,26 +146,31 @@ void MainWindow::onRemoveCharacterClicked()
     selectFirstCharacter();
 }
 
-void MainWindow::onAddCharacterClicked()
+void MainWindow::addCharacter()
 {
     QString name = QInputDialog::getText(this, tr("Add new character"), tr("Name for new character:"));
+    if (name.isEmpty()) {
+        return;
+    }
     auto index = charactersModel->addCharacter(name);
-    ui->charactersListView->selectionModel()->select(index, QItemSelectionModel::ClearAndSelect);
-    enableCharacterView();
-    onCharacterSelectionChanged(index);
+    auto mappedIndex = charactersFilterModel.mapFromSource(index);
+    ui->charactersListView->selectionModel()->setCurrentIndex(mappedIndex, QItemSelectionModel::ClearAndSelect);
 }
 
-void MainWindow::onSaveTriggered()
+void MainWindow::saveCampaign()
 {
     auto currentIndex = ui->charactersListView->selectionModel()->currentIndex();
-    saveCurrentViewToCharacter(currentIndex);
+    auto mappedIndex = charactersFilterModel.mapToSource(currentIndex);
+    saveCurrentViewToCharacter(mappedIndex);
     campaign.saveToFile(charactersModel);
+    campaignChanged = false;
 }
 
-void MainWindow::onCharacterImageClicked()
+void MainWindow::chooseCharacterImage()
 {
     auto currentIndex = ui->charactersListView->selectionModel()->currentIndex();
-    if (!currentIndex.isValid()) {
+    auto mappedIndex = charactersFilterModel.mapToSource(currentIndex);
+    if (!mappedIndex.isValid()) {
         return;
     }
 
@@ -160,12 +197,24 @@ void MainWindow::onCharacterImageClicked()
     auto relativeImagePath = campaignDir.relativeFilePath(imagePath);
     ui->labelImage->setPixmap(pixmap);
     characterChanged = true;
-    charactersModel->setData(currentIndex.row(), CharacterElement::IMAGEPATH, relativeImagePath);
+    charactersModel->setData(mappedIndex.row(), CharacterElement::IMAGEPATH, relativeImagePath);
 }
 
-void MainWindow::onCharacterChanged()
+void MainWindow::setCharacterChanged()
 {
     characterChanged = true;
+    campaignChanged = true;
+}
+
+void MainWindow::showAboutApp()
+{
+    QMessageBox::about(this, tr("About Game Master's Notepad"),
+                       tr("Current version: %1").arg(QCoreApplication::applicationVersion()));
+}
+
+void MainWindow::showAboutQt()
+{
+    QMessageBox::aboutQt(this);
 }
 
 void MainWindow::configureCharactersListView()
@@ -174,19 +223,17 @@ void MainWindow::configureCharactersListView()
         return;
     }
     charactersFilterModel.setSourceModel(charactersModel.get());
-    ui->charactersListView->setModel(&charactersFilterModel);
     charactersFilterModel.setFilterKeyColumn(0);
+    ui->charactersListView->setModel(&charactersFilterModel);
     connect(ui->charactersListView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onCharacterSelectionChanged);
-
     selectFirstCharacter();
 }
 
 void MainWindow::selectFirstCharacter()
 {
-    if (!charactersModel->isEmpty()) {
-        auto firstIndex = charactersModel->index(0, 0);
+    if (charactersFilterModel.rowCount() > 0) {
+        auto firstIndex = charactersFilterModel.index(0, 0);
         ui->charactersListView->selectionModel()->setCurrentIndex(firstIndex, QItemSelectionModel::ClearAndSelect);
-        onCharacterSelectionChanged(firstIndex);
     } else {
         clearCharacterView();
         disableCharacterView();
@@ -195,6 +242,10 @@ void MainWindow::selectFirstCharacter()
 
 void MainWindow::showCharacter(const Character &character)
 {
+    ui->textEditBackstory->blockSignals(true);
+    ui->textEditDescription->blockSignals(true);
+    ui->textEditNotes->blockSignals(true);
+
     enableCharacterView();
     ui->lineEditAge->setText(character.getAge());
     ui->lineEditName->setText(character.getName());
@@ -203,6 +254,10 @@ void MainWindow::showCharacter(const Character &character)
     ui->textEditBackstory->setText(character.getBackstory());
     ui->textEditDescription->setText(character.getDescription());
     ui->textEditNotes->setText(character.getNotes());
+
+    ui->textEditBackstory->blockSignals(false);
+    ui->textEditDescription->blockSignals(false);
+    ui->textEditNotes->blockSignals(false);
 
     QFileInfo imageFileInfo(campaign.getDir(), character.getImagePath());
     auto pixmap = QPixmap(imageFileInfo.canonicalFilePath());
@@ -227,42 +282,41 @@ void MainWindow::clearCharacterView()
 
 void MainWindow::disableCharacterView()
 {
-    ui->lineEditAge->setDisabled(true);
-    ui->lineEditName->setDisabled(true);
-    ui->lineEditProfession->setDisabled(true);
-    ui->lineEditRace->setDisabled(true);
-    ui->textEditBackstory->setDisabled(true);
-    ui->textEditDescription->setDisabled(true);
-    ui->textEditNotes->setDisabled(true);
+    setDisabledCharacterView(true);
 }
 
 void MainWindow::enableCharacterView()
 {
-    ui->lineEditAge->setDisabled(false);
-    ui->lineEditName->setDisabled(false);
-    ui->lineEditProfession->setDisabled(false);
-    ui->lineEditRace->setDisabled(false);
-    ui->textEditBackstory->setDisabled(false);
-    ui->textEditDescription->setDisabled(false);
-    ui->textEditNotes->setDisabled(false);
+    setDisabledCharacterView(false);
+}
+
+void MainWindow::setDisabledCharacterView(const bool disabled)
+{
+    ui->lineEditAge->setDisabled(disabled);
+    ui->lineEditName->setDisabled(disabled);
+    ui->lineEditProfession->setDisabled(disabled);
+    ui->lineEditRace->setDisabled(disabled);
+    ui->textEditBackstory->setDisabled(disabled);
+    ui->textEditDescription->setDisabled(disabled);
+    ui->textEditNotes->setDisabled(disabled);
 }
 
 void MainWindow::saveCurrentViewToCharacter(const QModelIndex &index)
 {
-    if (!index.isValid()) {
+    if (!index.isValid() || !characterChanged || savingView) {
         return;
     }
-    if (!characterChanged) {
-        return;
-    }
+    savingView = true;
 
     auto currentRow = index.row();
     charactersModel->setData(currentRow, CharacterElement::AGE, ui->lineEditAge->text());
     charactersModel->setData(currentRow, CharacterElement::RACE, ui->lineEditRace->text());
-    charactersModel->setData(currentRow, CharacterElement::NAME, ui->lineEditName->text());
     charactersModel->setData(currentRow, CharacterElement::PROFESSION, ui->lineEditProfession->text());
     charactersModel->setData(currentRow, CharacterElement::DESCRIPTION, ui->textEditDescription->toPlainText());
     charactersModel->setData(currentRow, CharacterElement::NOTES, ui->textEditNotes->toPlainText());
     charactersModel->setData(currentRow, CharacterElement::BACKSTORY, ui->textEditBackstory->toPlainText());
+    charactersModel->setData(currentRow, CharacterElement::NAME, ui->lineEditName->text());
     characterChanged = false;
+
+    savingView = false;
 }

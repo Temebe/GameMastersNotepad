@@ -13,7 +13,6 @@ class CampaignInfo : public GMNSerializable
 {
 public:
     CampaignInfo() = default;
-    CampaignInfo(const QString &path);
     CampaignInfo(const CampaignInfo& other);
     CampaignInfo(CampaignInfo&& other);
     CampaignInfo& operator=(const CampaignInfo& other);
@@ -21,6 +20,8 @@ public:
 
     bool loadFromJsonDocument(const QJsonDocument &doc);
     QJsonValue serialize() const;
+
+    bool loadFromFile(const QString& path);
 
     QString getName() const;
     void setName(const QString &value);

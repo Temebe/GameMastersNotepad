@@ -134,7 +134,7 @@ p, li { white-space: pre-wrap; }
    <sender>cancel_button</sender>
    <signal>clicked()</signal>
    <receiver>WelcomeDialog</receiver>
-   <slot>onCancelButtonClicked()</slot>
+   <slot>exitApplication()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>328</x>
@@ -150,7 +150,7 @@ p, li { white-space: pre-wrap; }
    <sender>load_from_list_button</sender>
    <signal>clicked()</signal>
    <receiver>WelcomeDialog</receiver>
-   <slot>onLoadFromListButtonClicked()</slot>
+   <slot>loadFromList()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>87</x>
@@ -166,7 +166,7 @@ p, li { white-space: pre-wrap; }
    <sender>create_new_button</sender>
    <signal>clicked()</signal>
    <receiver>WelcomeDialog</receiver>
-   <slot>onCreateNewButtonClicked()</slot>
+   <slot>createNewCampaign()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>249</x>
@@ -182,7 +182,7 @@ p, li { white-space: pre-wrap; }
    <sender>campaignsTableView</sender>
    <signal>doubleClicked(QModelIndex)</signal>
    <receiver>WelcomeDialog</receiver>
-   <slot>onDoubleClickedName(QModelIndex)</slot>
+   <slot>loadCampaignFromIndex(QModelIndex)</slot>
    <hints>
     <hint type="sourcelabel">
      <x>249</x>
@@ -196,9 +196,9 @@ p, li { white-space: pre-wrap; }
   </connection>
  </connections>
  <slots>
-  <slot>onCancelButtonClicked()</slot>
-  <slot>onCreateNewButtonClicked()</slot>
-  <slot>onLoadFromListButtonClicked()</slot>
-  <slot>onDoubleClickedName(QModelIndex)</slot>
+  <slot>exitApplication()</slot>
+  <slot>createNewCampaign()</slot>
+  <slot>loadFromList()</slot>
+  <slot>loadCampaignFromIndex(QModelIndex)</slot>
  </slots>
 </ui>

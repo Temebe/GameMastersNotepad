@@ -20,22 +20,22 @@ WelcomeDialog::~WelcomeDialog()
     delete ui;
 }
 
-void WelcomeDialog::onSuccesfullCampaignLoad()
+void WelcomeDialog::closeWindow()
 {
     close();
 }
 
-void WelcomeDialog::onCampaignLoadError(QString message)
+void WelcomeDialog::showCampaignLoadError(QString message)
 {
     QErrorMessage().showMessage(message);
 }
 
-void WelcomeDialog::onCancelButtonClicked()
+void WelcomeDialog::exitApplication()
 {
     QApplication::exit();
 }
 
-void WelcomeDialog::onCreateNewButtonClicked()
+void WelcomeDialog::createNewCampaign()
 {
     bool ok;
     QString campaignName;
@@ -70,7 +70,7 @@ void WelcomeDialog::onCreateNewButtonClicked()
     emit newCampaignChosen(campaignName);
 }
 
-void WelcomeDialog::onLoadFromListButtonClicked()
+void WelcomeDialog::loadFromList()
 {
     auto currentIndex = ui->campaignsTableView->selectionModel()->currentIndex();
     if (!currentIndex.isValid()) {
@@ -82,7 +82,7 @@ void WelcomeDialog::onLoadFromListButtonClicked()
     emit loadCampaignChosen(campaignName);
 }
 
-void WelcomeDialog::onDoubleClickedName(const QModelIndex &index)
+void WelcomeDialog::loadCampaignFromIndex(const QModelIndex &index)
 {
     auto nameIndex = index.siblingAtColumn(0);
     auto campaignName = campaignsModel.data(nameIndex).toString();
@@ -97,29 +97,20 @@ void WelcomeDialog::populateCampaigns()
 
     while(it.hasNext()) {
         auto path = it.next();
-        auto infoPath = path + "/" + QString("info.json");
+        auto infoPath = path + "/" + GMN::infoFileName;
         if (!QFile::exists(infoPath)) {
             continue;
         }
 
-        //FIXME Can I somehow use try catch and then go with rest of code outside of try scope
-        // And without std::optional and pointers
-        QStandardItem *name {nullptr};
-        QStandardItem *creationDate {nullptr};
-        QStandardItem *lastOpenedDate {nullptr};
-        try {
-            CampaignInfo campaignInfo(infoPath);
-            name = new QStandardItem(campaignInfo.getName());
-            creationDate = new QStandardItem(campaignInfo.getCreationDate().toString());
-            lastOpenedDate = new QStandardItem(campaignInfo.getLastOpenedDate().toString());
+        CampaignInfo campaignInfo;
 
-        }  catch (std::runtime_error& e) {
+        if (!campaignInfo.loadFromFile(infoPath)) {
             continue;
         }
 
-        campaignsModel.setItem(row, 0, name);
-        campaignsModel.setItem(row, 1, creationDate);
-        campaignsModel.setItem(row, 2, lastOpenedDate);
+        campaignsModel.setItem(row, 0, new QStandardItem(campaignInfo.getName()));
+        campaignsModel.setItem(row, 1, new QStandardItem(campaignInfo.getCreationDate().toString()));
+        campaignsModel.setItem(row, 2, new QStandardItem(campaignInfo.getLastOpenedDate().toString()));
         ++row;
     }
 
@@ -137,6 +128,4 @@ void WelcomeDialog::configureTableView()
     header->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     campaignsModel.setHorizontalHeaderItem(2, new QStandardItem(tr("Last opened")));
     header->setSectionResizeMode(2, QHeaderView::ResizeToContents);
-
-    //header->setStretchLastSection(true);
 }

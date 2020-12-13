@@ -3,22 +3,6 @@
 #include <QFile>
 #include <QJsonObject>
 
-CampaignInfo::CampaignInfo(const QString &path)
-{
-    QFile file(path);
-    bool openResult = file.open(QFile::ReadOnly | QFile::Text);
-    if (!openResult) {
-        throw std::runtime_error("Unable to open file " + path.toStdString());
-    }
-
-    auto fileContent = file.readAll();
-    file.close();
-
-    if (!loadFromJson(fileContent)) {
-        throw std::runtime_error("Your information file is corrupted: " + path.toStdString());
-    }
-}
-
 CampaignInfo::CampaignInfo(const CampaignInfo &other)
     : name(other.name),
       creationDate(other.creationDate),
@@ -64,6 +48,24 @@ QJsonValue CampaignInfo::serialize() const
     };
 
     return serialized;
+}
+
+bool CampaignInfo::loadFromFile(const QString &path)
+{
+    QFile file(path);
+    bool openResult = file.open(QFile::ReadOnly | QFile::Text);
+    if (!openResult) {
+        return false;
+    }
+
+    auto fileContent = file.readAll();
+    file.close();
+
+    if (!loadFromJson(fileContent)) {
+        return false;
+    }
+
+    return true;
 }
 
 QString CampaignInfo::getName() const

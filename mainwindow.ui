@@ -11,7 +11,11 @@
    </rect>
   </property>
   <property name="windowTitle">
-   <string>MainWindow</string>
+   <string>Game Master's Notepad</string>
+  </property>
+  <property name="windowIcon">
+   <iconset resource="resources.qrc">
+    <normaloff>:/images/nopic.png</normaloff>:/images/nopic.png</iconset>
   </property>
   <widget class="QWidget" name="centralwidget">
    <layout class="QVBoxLayout" name="verticalLayout">
@@ -34,7 +38,7 @@
       </property>
       <widget class="QWidget" name="charactersTab">
        <attribute name="title">
-        <string>characters</string>
+        <string>Characters</string>
        </attribute>
        <layout class="QHBoxLayout" name="horizontalLayout" stretch="0,4">
         <item>
@@ -60,6 +64,9 @@
             </item>
             <item>
              <widget class="QPushButton" name="buttonRemove">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="text">
                <string>Remove</string>
               </property>
@@ -93,7 +100,7 @@
              </property>
              <layout class="QVBoxLayout" name="verticalLayout_4" stretch="2,3">
               <item>
-               <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,5">
+               <layout class="QHBoxLayout" name="horizontalLayout_3" stretch="2,6">
                 <property name="sizeConstraint">
                  <enum>QLayout::SetDefaultConstraint</enum>
                 </property>
@@ -107,6 +114,18 @@
                   </property>
                   <property name="autoFillBackground">
                    <bool>false</bool>
+                  </property>
+                  <property name="frameShape">
+                   <enum>QFrame::Box</enum>
+                  </property>
+                  <property name="frameShadow">
+                   <enum>QFrame::Raised</enum>
+                  </property>
+                  <property name="lineWidth">
+                   <number>2</number>
+                  </property>
+                  <property name="midLineWidth">
+                   <number>1</number>
                   </property>
                   <property name="text">
                    <string/>
@@ -217,10 +236,18 @@
         </item>
        </layout>
       </widget>
-      <widget class="QWidget" name="tab_2">
+      <widget class="QWidget" name="locationsTab">
        <attribute name="title">
-        <string>Tab 2</string>
+        <string>Locations</string>
        </attribute>
+       <layout class="QHBoxLayout" name="horizontalLayout_5">
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_6"/>
+        </item>
+        <item>
+         <layout class="QVBoxLayout" name="verticalLayout_7"/>
+        </item>
+       </layout>
       </widget>
      </widget>
     </item>
@@ -241,17 +268,34 @@
     </property>
     <addaction name="separator"/>
     <addaction name="separator"/>
-    <addaction name="saveAction"/>
+    <addaction name="actionSave"/>
+   </widget>
+   <widget class="QMenu" name="menuAbout">
+    <property name="title">
+     <string>Help</string>
+    </property>
+    <addaction name="actionAboutApp"/>
+    <addaction name="actionAboutQt"/>
    </widget>
    <addaction name="menuFile"/>
+   <addaction name="menuAbout"/>
   </widget>
-  <widget class="QStatusBar" name="statusbar"/>
-  <action name="saveAction">
+  <action name="actionSave">
    <property name="text">
     <string>Save</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+S</string>
+   </property>
+  </action>
+  <action name="actionAboutApp">
+   <property name="text">
+    <string>About</string>
+   </property>
+  </action>
+  <action name="actionAboutQt">
+   <property name="text">
+    <string>About Qt</string>
    </property>
   </action>
  </widget>
@@ -286,7 +330,7 @@
    <sender>buttonRemove</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onRemoveCharacterClicked()</slot>
+   <slot>removeCharacter()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>213</x>
@@ -302,7 +346,7 @@
    <sender>buttonAddNew</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
-   <slot>onAddCharacterClicked()</slot>
+   <slot>addCharacter()</slot>
    <hints>
     <hint type="sourcelabel">
      <x>83</x>
@@ -317,7 +361,7 @@
  </connections>
  <slots>
   <slot>onCharactersSearchTextChanged(QString)</slot>
-  <slot>onRemoveCharacterClicked()</slot>
-  <slot>onAddCharacterClicked()</slot>
+  <slot>removeCharacter()</slot>
+  <slot>addCharacter()</slot>
  </slots>
 </ui>

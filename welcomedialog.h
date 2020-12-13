@@ -24,14 +24,14 @@ signals:
     void loadCampaignChosen(QString name);
 
 public slots:
-    void onSuccesfullCampaignLoad();
-    void onCampaignLoadError(QString message);
+    void closeWindow();
+    void showCampaignLoadError(QString message);
 
 private slots:
-    void onCancelButtonClicked();
-    void onCreateNewButtonClicked();
-    void onLoadFromListButtonClicked();
-    void onDoubleClickedName(const QModelIndex &index);
+    void exitApplication();
+    void createNewCampaign();
+    void loadFromList();
+    void loadCampaignFromIndex(const QModelIndex &index);
 
 private:
     Ui::WelcomeDialog *ui;
