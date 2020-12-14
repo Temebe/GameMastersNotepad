@@ -1,6 +1,7 @@
 #include "welcomedialog.h"
 #include "ui_welcomedialog.h"
 #include "campaigninfo.h"
+#include "gmnobjectmodel.tpp"
 
 #include <QDirIterator>
 #include <QErrorMessage>

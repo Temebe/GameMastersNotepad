@@ -1,5 +1,7 @@
 ﻿#include "character.h"
 
+#include <QString>
+
 #include <functional>
 
 Character::Character(const Character &other)
@@ -43,6 +45,118 @@ Character &Character::operator=(Character &&other)
     std::swap(profession, other.profession);
     std::swap(imagePath, other.imagePath);
     return *this;
+}
+
+bool Character::setProperty(const int property, const QVariant &value)
+{
+    auto element = static_cast<CharacterProperty>(property);
+
+    switch (element) {
+    case CharacterProperty::AGE:
+        setAge(value.toString());
+        break;
+
+    case CharacterProperty::NAME:
+        setName(value.toString());
+        break;
+
+    case CharacterProperty::BACKSTORY:
+        setBackstory(value.toString());
+        break;
+
+    case CharacterProperty::DESCRIPTION:
+        setDescription(value.toString());
+        break;
+
+    case CharacterProperty::NOTES:
+        setNotes(value.toString());
+        break;
+
+    case CharacterProperty::PROFESSION:
+        setProfession(value.toString());
+        break;
+
+    case CharacterProperty::RACE:
+        setRace(value.toString());
+        break;
+
+    case CharacterProperty::IMAGEPATH:
+        setImagePath(value.toString());
+        break;
+
+    default:
+        return false;
+    }
+
+    return true;
+}
+
+QVariant Character::getProperty(const int property) const
+{
+    auto element = static_cast<CharacterProperty>(property);
+
+    switch (element) {
+    case CharacterProperty::AGE:
+        return QVariant(getAge());
+
+    case CharacterProperty::NAME:
+        return QVariant(getName());
+
+    case CharacterProperty::BACKSTORY:
+        return QVariant(getBackstory());
+
+    case CharacterProperty::DESCRIPTION:
+        return QVariant(getDescription());
+
+    case CharacterProperty::NOTES:
+        return QVariant(getNotes());
+
+    case CharacterProperty::PROFESSION:
+        return QVariant(getProfession());
+
+    case CharacterProperty::RACE:
+        return QVariant(getRace());
+
+    case CharacterProperty::IMAGEPATH:
+        return QVariant(getImagePath());
+
+    default:
+        return {};
+    }
+}
+
+QVariant Character::getHeaderData(const int property) const
+{
+    auto propertyId = static_cast<CharacterProperty>(property);
+
+    switch (propertyId) {
+    case CharacterProperty::AGE:
+       return QObject::tr("Age");
+
+    case CharacterProperty::NAME:
+      return QObject::tr("Name");
+
+    case CharacterProperty::BACKSTORY:
+      return QObject::tr("Backstory");
+
+    case CharacterProperty::DESCRIPTION:
+      return QObject::tr("Description");
+
+    case CharacterProperty::NOTES:
+       return QObject::tr("Notes");
+
+    case CharacterProperty::PROFESSION:
+      return QObject::tr("Profession");
+
+    case CharacterProperty::RACE:
+       return QObject::tr("Race");
+
+    case CharacterProperty::IMAGEPATH:
+      return QObject::tr("Image Path");
+
+    default:
+        return {};
+    }
 }
 
 bool Character::loadFromJsonDocument(const QJsonDocument &doc)

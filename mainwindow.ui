@@ -28,7 +28,7 @@
        <enum>QTabWidget::Rounded</enum>
       </property>
       <property name="currentIndex">
-       <number>0</number>
+       <number>1</number>
       </property>
       <property name="movable">
        <bool>true</bool>
@@ -56,14 +56,14 @@
           <item>
            <layout class="QHBoxLayout" name="horizontalLayout_2">
             <item>
-             <widget class="QPushButton" name="buttonAddNew">
+             <widget class="QPushButton" name="buttonAddNewCharacter">
               <property name="text">
                <string>Add new</string>
               </property>
              </widget>
             </item>
             <item>
-             <widget class="QPushButton" name="buttonRemove">
+             <widget class="QPushButton" name="buttonRemoveCharacter">
               <property name="enabled">
                <bool>false</bool>
               </property>
@@ -240,12 +240,65 @@
        <attribute name="title">
         <string>Locations</string>
        </attribute>
-       <layout class="QHBoxLayout" name="horizontalLayout_5">
+       <layout class="QHBoxLayout" name="horizontalLayout_5" stretch="0,4">
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_6"/>
+         <layout class="QVBoxLayout" name="verticalLayout_6">
+          <item>
+           <widget class="QListView" name="locationsListView"/>
+          </item>
+          <item>
+           <widget class="QLineEdit" name="lineEditSearchLocation"/>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QPushButton" name="buttonAddNewLocation">
+              <property name="text">
+               <string>Add location</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QPushButton" name="buttonRemoveLocation">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="text">
+               <string>Remove location</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_7"/>
+         <layout class="QVBoxLayout" name="verticalLayout_7">
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_6">
+            <item>
+             <widget class="QLabel" name="label">
+              <property name="text">
+               <string>Name</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QLineEdit" name="lineEditLocationName"/>
+            </item>
+           </layout>
+          </item>
+          <item>
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Notes &amp; Story</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QTextEdit" name="textEditLocationNotes"/>
+          </item>
+         </layout>
         </item>
        </layout>
       </widget>
@@ -327,7 +380,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonRemove</sender>
+   <sender>buttonRemoveCharacter</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>removeCharacter()</slot>
@@ -343,7 +396,7 @@
    </hints>
   </connection>
   <connection>
-   <sender>buttonAddNew</sender>
+   <sender>buttonAddNewCharacter</sender>
    <signal>clicked()</signal>
    <receiver>MainWindow</receiver>
    <slot>addCharacter()</slot>
@@ -358,10 +411,61 @@
     </hint>
    </hints>
   </connection>
+  <connection>
+   <sender>buttonAddNewLocation</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>addLocation()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>83</x>
+     <y>458</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>403</x>
+     <y>245</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>buttonRemoveLocation</sender>
+   <signal>clicked()</signal>
+   <receiver>MainWindow</receiver>
+   <slot>removeLocation()</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>213</x>
+     <y>458</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>403</x>
+     <y>245</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>lineEditSearchLocation</sender>
+   <signal>textChanged(QString)</signal>
+   <receiver>MainWindow</receiver>
+   <slot>onLocationsSearchTextChanged(QString)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>148</x>
+     <y>428</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>403</x>
+     <y>245</y>
+    </hint>
+   </hints>
+  </connection>
  </connections>
  <slots>
   <slot>onCharactersSearchTextChanged(QString)</slot>
   <slot>removeCharacter()</slot>
   <slot>addCharacter()</slot>
+  <slot>onLocationsSearchTextChanged(QString)</slot>
+  <slot>removeLocation()</slot>
+  <slot>addLocation()</slot>
  </slots>
 </ui>

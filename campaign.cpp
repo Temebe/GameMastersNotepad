@@ -3,6 +3,7 @@
 #include "gmnpaths.h"
 #include "gmnutils.h"
 #include "gmnserializable.h"
+#include "gmnobjectmodel.tpp"
 
 #include <QFile>
 #include <QJsonArray>
@@ -88,12 +89,13 @@ void Campaign::loadFromPath(const QString &path)
     emit succesfullyLoaded();
 }
 
-void Campaign::saveToFile(const std::unique_ptr<CharactersModel> &charactersModel)
+void Campaign::saveToFile(const CharacterModelType &charactersModel, const LocationModelType &locationsModel)
 {
     QDir().mkpath(path);
     QDir().mkpath(path + "/" + GMN::imagesFolderName);
     saveInfoFile();
     saveCharactersToFile(charactersModel);
+    saveLocationsToFile(locationsModel);
 }
 
 void Campaign::saveInfoFile()
@@ -105,22 +107,43 @@ void Campaign::saveInfoFile()
     }
 }
 
-void Campaign::saveCharactersToFile(const std::unique_ptr<CharactersModel> &charactersModel)
+void Campaign::saveCharactersToFile(const CharacterModelType &charactersModel)
 {
-    QString serializedCharacters = charactersModel ? charactersModel->toJsonString() : CharactersModel().toJsonString();
+    QString serializedCharacters = charactersModel ? charactersModel->toJsonString() : GMNObjectModel<Character>().toJsonString();
     QString savePath(path + "/" + GMN::charactersFileName);
     if (!GMN::saveToFile(savePath, serializedCharacters)) {
         emit savingFailed(tr("Unable to save characters."));
     }
 }
 
-std::unique_ptr<CharactersModel> Campaign::createCharactersModel() const
+void Campaign::saveLocationsToFile(const Campaign::LocationModelType &locationsModel)
 {
-    auto model = std::make_unique<CharactersModel>();
+    QString serializedLocations = locationsModel ? locationsModel->toJsonString() : GMNObjectModel<Location>().toJsonString();
+    QString savePath(path + "/" + GMN::locationsFileName);
+    if (!GMN::saveToFile(savePath, serializedLocations)) {
+        emit savingFailed(tr("Unable to save locations."));
+    }
+}
+
+Campaign::CharacterModelType Campaign::createCharactersModel() const
+{
+    auto model = std::make_unique<GMNObjectModel<Character>>();
     std::optional<QString> charactersFile = GMN::loadJsonFile(path + "/" + GMN::charactersFileName);
 
     if (charactersFile) {
         model->loadFromJson(charactersFile.value().toUtf8());
+    }
+
+    return model;
+}
+
+Campaign::LocationModelType Campaign::createLocationsModel() const
+{
+    auto model = std::make_unique<GMNObjectModel<Location>>();
+    std::optional<QString> locationFile = GMN::loadJsonFile(path + "/" + GMN::locationsFileName);
+
+    if (locationFile) {
+        model->loadFromJson(locationFile.value().toUtf8());
     }
 
     return model;

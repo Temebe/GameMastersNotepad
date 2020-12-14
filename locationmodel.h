@@ -1,23 +1,23 @@
-#ifndef CHARACTERSLISTMODEL_H
-#define CHARACTERSLISTMODEL_H
+#ifndef LOCATIONMODEL_H
+#define LOCATIONMODEL_H
 
-#include "character.h"
+#include "location.h"
 #include "gmnserializable.h"
 
-#include <QObject>
 #include <QAbstractTableModel>
+#include <QObject>
 
-class CharactersModel : public QAbstractTableModel, public GMNSerializable
+class LocationModel : public QAbstractTableModel, public GMNSerializable
 {
     Q_OBJECT
 public:
-    CharactersModel(QObject *parent = nullptr);
+    LocationModel(QObject *parent = nullptr);
 
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
-    bool setData(int row, const CharacterElement element, const QString& value);
+    bool setData(int row, const LocationProperty element, const QString& value);
     bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
     bool insertRows(int position, int rows, const QModelIndex &index = QModelIndex()) override;
@@ -26,15 +26,8 @@ public:
     virtual bool loadFromJsonDocument(const QJsonDocument &doc) override;
     virtual QJsonValue serialize() const override;
 
-    std::optional<Character> getCharacter(const QModelIndex& index);
-    QModelIndex addCharacter(const QString &name);
-
-    void clear();
-    size_t getSize() const;
-    bool isEmpty() const;
-
 private:
-    std::vector<Character> characters;
+    std::vector<Location> locations;
 };
 
-#endif // CHARACTERSLISTMODEL_H
+#endif // LOCATIONMODEL_H

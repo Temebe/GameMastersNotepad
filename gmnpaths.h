@@ -11,6 +11,7 @@ namespace GMN {
     const QString charactersFileName = "characters.json";
     const QString infoFileName = "info.json";
     const QString defaultCharacterImagePath = ":/images/nopic.png";
+    const QString locationsFileName = "locations.json";
 }
 
 #endif // GMNPATHS_H

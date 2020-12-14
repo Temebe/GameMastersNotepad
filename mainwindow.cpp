@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 
 #include "gmnpaths.h"
+#include "gmnobjectmodel.tpp"
 
 #include <QInputDialog>
 #include <QMessageBox>
@@ -45,6 +46,9 @@ void MainWindow::init()
     connect(ui->textEditDescription, &QTextEdit::textChanged, this, &MainWindow::setCharacterChanged);
     connect(ui->textEditNotes, &QTextEdit::textChanged, this, &MainWindow::setCharacterChanged);
 
+    connect(ui->lineEditLocationName, &QLineEdit::textEdited, this, &MainWindow::setLocationChanged);
+    connect(ui->textEditLocationNotes, &QTextEdit::textChanged, this, &MainWindow::setLocationChanged);
+
     connect(ui->labelImage, &ClickableImageLabel::clicked, this, &MainWindow::chooseCharacterImage);
 }
 
@@ -61,12 +65,22 @@ void MainWindow::loadCampaign(const QString& name)
 void MainWindow::configureViews()
 {
     charactersModel = campaign.createCharactersModel();
+    locationsModel = campaign.createLocationsModel();
+
     configureCharactersListView();
+    configureLocationsListView();
+
     if (!charactersModel->isEmpty()) {
         enableCharacterView();
     }
+    if (!locationsModel->isEmpty()) {
+        enableLocationView();
+    }
+
+    locationChanged = false;
     characterChanged = false;
     campaignChanged = false;
+
     show();
     emit windowReady();
 }
@@ -105,17 +119,36 @@ void MainWindow::onCharacterSelectionChanged(const QModelIndex &index, const QMo
     auto mappedPreviousIndex = charactersFilterModel.mapToSource(previousIndex);
 
     saveCurrentViewToCharacter(mappedPreviousIndex);
-    auto characterOpt = charactersModel->getCharacter(mappedIndex);
+    auto characterOpt = charactersModel->getObject(mappedIndex);
 
     if (!characterOpt) {
         clearCharacterView();
         disableCharacterView();
-        ui->buttonRemove->setDisabled(true);
+        ui->buttonRemoveCharacter->setDisabled(true);
         return;
     }
 
-    ui->buttonRemove->setDisabled(false);
+    ui->buttonRemoveCharacter->setDisabled(false);
     showCharacter(characterOpt.value());
+}
+
+void MainWindow::onLocationSelectionChanged(const QModelIndex &index, const QModelIndex &previousIndex)
+{
+    auto mappedIndex = locationsFilterModel.mapToSource(index);
+    auto mappedPreviousIndex = locationsFilterModel.mapToSource(previousIndex);
+
+    saveCurrentViewToLocation(mappedPreviousIndex);
+    auto locationOpt = locationsModel->getObject(mappedIndex);
+
+    if (!locationOpt) {
+        clearLocationView();
+        disableLocationView();
+        ui->buttonRemoveLocation->setDisabled(true);
+        return;
+    }
+
+    ui->buttonRemoveLocation->setDisabled(false);
+    showLocation(locationOpt.value());
 }
 
 void MainWindow::onCharactersSearchTextChanged(const QString& text)
@@ -127,10 +160,19 @@ void MainWindow::onCharactersSearchTextChanged(const QString& text)
     selectionModel->setCurrentIndex(charactersFilterModel.mapFromSource(currentIndex), QItemSelectionModel::ClearAndSelect);
 }
 
+void MainWindow::onLocationsSearchTextChanged(const QString &text)
+{
+    auto selectionModel = ui->locationsListView->selectionModel();
+    auto currentIndex = locationsFilterModel.mapToSource(selectionModel->currentIndex());
+    ui->locationsListView->selectionModel()->clearCurrentIndex();
+    locationsFilterModel.setFilterRegExp(QRegExp(text, Qt::CaseSensitive, QRegExp::FixedString));
+    selectionModel->setCurrentIndex(locationsFilterModel.mapFromSource(currentIndex), QItemSelectionModel::ClearAndSelect);
+}
+
 void MainWindow::removeCharacter()
 {
     auto currentIndex = charactersFilterModel.mapToSource(ui->charactersListView->selectionModel()->currentIndex());
-    auto characterName = charactersModel->getCharacter(currentIndex).value_or(Character()).getName();
+    auto characterName = charactersModel->getObject(currentIndex).value_or(Character()).getName();
 
     auto clickedButton = QMessageBox::question(
                 this,
@@ -146,23 +188,57 @@ void MainWindow::removeCharacter()
     selectFirstCharacter();
 }
 
+void MainWindow::removeLocation()
+{
+    auto currentIndex = locationsFilterModel.mapToSource(ui->locationsListView->selectionModel()->currentIndex());
+    auto locationName = locationsModel->getObject(currentIndex).value_or(Location()).getName();
+
+    auto clickedButton = QMessageBox::question(
+                this,
+                tr("Removing location"),
+                tr("You are about to remove location %1, you want to proceed?").arg(locationName)
+    );
+
+    if (clickedButton == QMessageBox::No) {
+        return;
+    }
+
+    locationsModel->removeRow(currentIndex.row());
+    selectFirstLocation();
+}
+
 void MainWindow::addCharacter()
 {
     QString name = QInputDialog::getText(this, tr("Add new character"), tr("Name for new character:"));
     if (name.isEmpty()) {
         return;
     }
-    auto index = charactersModel->addCharacter(name);
+    auto index = charactersModel->addObject(name);
     auto mappedIndex = charactersFilterModel.mapFromSource(index);
     ui->charactersListView->selectionModel()->setCurrentIndex(mappedIndex, QItemSelectionModel::ClearAndSelect);
 }
 
+void MainWindow::addLocation()
+{
+    QString name = QInputDialog::getText(this, tr("Add new location"), tr("Name of new location:"));
+    if (name.isEmpty()) {
+        return;
+    }
+    auto index = locationsModel->addObject(name);
+    auto mappedIndex = locationsFilterModel.mapFromSource(index);
+    ui->locationsListView->selectionModel()->setCurrentIndex(mappedIndex, QItemSelectionModel::ClearAndSelect);
+
+}
+
 void MainWindow::saveCampaign()
 {
-    auto currentIndex = ui->charactersListView->selectionModel()->currentIndex();
-    auto mappedIndex = charactersFilterModel.mapToSource(currentIndex);
-    saveCurrentViewToCharacter(mappedIndex);
-    campaign.saveToFile(charactersModel);
+    auto currentCharacterIndex = ui->charactersListView->selectionModel()->currentIndex();
+    auto mappedCharacterIndex = charactersFilterModel.mapToSource(currentCharacterIndex);
+    auto currentLocationIndex = ui->locationsListView->selectionModel()->currentIndex();
+    auto mappedLocationIndex = locationsFilterModel.mapToSource(currentLocationIndex);
+    saveCurrentViewToCharacter(mappedCharacterIndex);
+    saveCurrentViewToLocation(mappedLocationIndex);
+    campaign.saveToFile(charactersModel, locationsModel);
     campaignChanged = false;
 }
 
@@ -197,12 +273,19 @@ void MainWindow::chooseCharacterImage()
     auto relativeImagePath = campaignDir.relativeFilePath(imagePath);
     ui->labelImage->setPixmap(pixmap);
     characterChanged = true;
-    charactersModel->setData(mappedIndex.row(), CharacterElement::IMAGEPATH, relativeImagePath);
+    charactersModel->setData(
+                mappedIndex.siblingAtColumn(static_cast<int>(CharacterProperty::IMAGEPATH)), relativeImagePath);
 }
 
 void MainWindow::setCharacterChanged()
 {
     characterChanged = true;
+    campaignChanged = true;
+}
+
+void MainWindow::setLocationChanged()
+{
+    locationChanged = true;
     campaignChanged = true;
 }
 
@@ -229,6 +312,18 @@ void MainWindow::configureCharactersListView()
     selectFirstCharacter();
 }
 
+void MainWindow::configureLocationsListView()
+{
+    if (!locationsModel) {
+        return;
+    }
+    locationsFilterModel.setSourceModel(locationsModel.get());
+    locationsFilterModel.setFilterKeyColumn(0);
+    ui->locationsListView->setModel(&locationsFilterModel);
+    connect(ui->locationsListView->selectionModel(), &QItemSelectionModel::currentChanged, this, &MainWindow::onLocationSelectionChanged);
+    selectFirstLocation();
+}
+
 void MainWindow::selectFirstCharacter()
 {
     if (charactersFilterModel.rowCount() > 0) {
@@ -237,6 +332,17 @@ void MainWindow::selectFirstCharacter()
     } else {
         clearCharacterView();
         disableCharacterView();
+    }
+}
+
+void MainWindow::selectFirstLocation()
+{
+    if (locationsFilterModel.rowCount() > 0) {
+        auto firstIndex = locationsFilterModel.index(0, 0);
+        ui->locationsListView->selectionModel()->setCurrentIndex(firstIndex, QItemSelectionModel::ClearAndSelect);
+    } else {
+        clearLocationView();
+        disableLocationView();
     }
 }
 
@@ -267,6 +373,17 @@ void MainWindow::showCharacter(const Character &character)
     ui->labelImage->setPixmap(pixmap);
 }
 
+void MainWindow::showLocation(const Location &location)
+{
+    ui->textEditLocationNotes->blockSignals(true);
+
+    enableLocationView();
+    ui->lineEditLocationName->setText(location.getName());
+    ui->textEditLocationNotes->setText(location.getNotes());
+
+    ui->textEditLocationNotes->blockSignals(false);
+}
+
 void MainWindow::clearCharacterView()
 {
     disableCharacterView();
@@ -280,14 +397,31 @@ void MainWindow::clearCharacterView()
     ui->labelImage->setPixmap(QPixmap(GMN::defaultCharacterImagePath));
 }
 
+void MainWindow::clearLocationView()
+{
+    disableLocationView();
+    ui->lineEditLocationName->clear();
+    ui->textEditLocationNotes->clear();
+}
+
 void MainWindow::disableCharacterView()
 {
     setDisabledCharacterView(true);
 }
 
+void MainWindow::disableLocationView()
+{
+    setDisabledLocationView(true);
+}
+
 void MainWindow::enableCharacterView()
 {
     setDisabledCharacterView(false);
+}
+
+void MainWindow::enableLocationView()
+{
+    setDisabledLocationView(false);
 }
 
 void MainWindow::setDisabledCharacterView(const bool disabled)
@@ -301,6 +435,12 @@ void MainWindow::setDisabledCharacterView(const bool disabled)
     ui->textEditNotes->setDisabled(disabled);
 }
 
+void MainWindow::setDisabledLocationView(const bool disabled)
+{
+    ui->lineEditLocationName->setDisabled(disabled);
+    ui->textEditLocationNotes->setDisabled(disabled);
+}
+
 void MainWindow::saveCurrentViewToCharacter(const QModelIndex &index)
 {
     if (!index.isValid() || !characterChanged || savingView) {
@@ -308,15 +448,36 @@ void MainWindow::saveCurrentViewToCharacter(const QModelIndex &index)
     }
     savingView = true;
 
-    auto currentRow = index.row();
-    charactersModel->setData(currentRow, CharacterElement::AGE, ui->lineEditAge->text());
-    charactersModel->setData(currentRow, CharacterElement::RACE, ui->lineEditRace->text());
-    charactersModel->setData(currentRow, CharacterElement::PROFESSION, ui->lineEditProfession->text());
-    charactersModel->setData(currentRow, CharacterElement::DESCRIPTION, ui->textEditDescription->toPlainText());
-    charactersModel->setData(currentRow, CharacterElement::NOTES, ui->textEditNotes->toPlainText());
-    charactersModel->setData(currentRow, CharacterElement::BACKSTORY, ui->textEditBackstory->toPlainText());
-    charactersModel->setData(currentRow, CharacterElement::NAME, ui->lineEditName->text());
-    characterChanged = false;
+    auto setData = [this, &index](const CharacterProperty property, const QString& value){
+        this->charactersModel->setData(index.siblingAtColumn(static_cast<int>(property)), value);
+    };
 
+    setData(CharacterProperty::AGE, ui->lineEditAge->text());
+    setData(CharacterProperty::RACE, ui->lineEditRace->text());
+    setData(CharacterProperty::PROFESSION, ui->lineEditProfession->text());
+    setData(CharacterProperty::DESCRIPTION, ui->textEditDescription->toPlainText());
+    setData(CharacterProperty::NOTES, ui->textEditNotes->toPlainText());
+    setData(CharacterProperty::BACKSTORY, ui->textEditBackstory->toPlainText());
+    setData(CharacterProperty::NAME, ui->lineEditName->text());
+
+    characterChanged = false;
+    savingView = false;
+}
+
+void MainWindow::saveCurrentViewToLocation(const QModelIndex &index)
+{
+    if (!index.isValid() || !locationChanged || savingView) {
+        return;
+    }
+    savingView = true;
+
+    auto setData = [this, &index](const LocationProperty property, const QString& value){
+        this->locationsModel->setData(index.siblingAtColumn(static_cast<int>(property)), value);
+    };
+
+    setData(LocationProperty::NAME, ui->lineEditLocationName->text());
+    setData(LocationProperty::NOTES, ui->textEditLocationNotes->toPlainText());
+
+    locationChanged = false;
     savingView = false;
 }

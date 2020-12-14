@@ -12,8 +12,11 @@ SOURCES += \
     campaign.cpp \
     campaigninfo.cpp \
     character.cpp \
-    charactersmodel.cpp \
     clickableimagelabel.cpp \
+    gmnobject.cpp \
+    gmnobjectmodel.tpp \
+    location.cpp \
+    locationmodel.cpp \
     main.cpp \
     mainwindow.cpp \
     welcomedialog.cpp
@@ -22,11 +25,14 @@ HEADERS += \
     campaign.h \
     campaigninfo.h \
     character.h \
-    charactersmodel.h \
     clickableimagelabel.h \
+    gmnobject.h \
+    gmnobjectmodel.h \
     gmnpaths.h \
     gmnserializable.h \
     gmnutils.h \
+    location.h \
+    locationmodel.h \
     mainwindow.h \
     welcomedialog.h
 

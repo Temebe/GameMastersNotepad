@@ -2,11 +2,12 @@
 #define CHARACTER_H
 
 #include "gmnserializable.h"
+#include "gmnobject.h"
 
 #include <QJsonDocument>
 #include <QString>
 
-enum class CharacterElement {
+enum class CharacterProperty {
     NAME = 0,
     AGE,
     RACE,
@@ -17,7 +18,7 @@ enum class CharacterElement {
     IMAGEPATH
 };
 
-class Character : public GMNSerializable
+class Character : public GMNObject, public GMNSerializable
 {
 public:
     Character() = default;
@@ -27,11 +28,15 @@ public:
     Character& operator=(const Character& other);
     Character& operator=(Character&& other);
 
-    bool loadFromJsonDocument(const QJsonDocument &doc);
-    QJsonValue serialize() const;
+    virtual bool setProperty(const int property, const QVariant &value) override;
+    virtual QVariant getProperty(const int property) const override;
+    virtual QVariant getHeaderData(const int property) const override;
+
+    bool loadFromJsonDocument(const QJsonDocument &doc) override;
+    QJsonValue serialize() const override;
 
     QString getName() const;
-    void setName(const QString &value);
+    void setName(const QString &value) override;
 
     QString getAge() const;
     void setAge(const QString &value);
@@ -54,8 +59,9 @@ public:
     QString getImagePath() const;
     void setImagePath(const QString &value);
 
-    static constexpr int elementsCount() {return 8;}
-    static constexpr int elementToInt(const CharacterElement element);
+    static constexpr int elementsCount() { return 8; }
+    static constexpr int elementToInt(const CharacterProperty element);
+    using PropertyType = CharacterProperty;
 
 private:
     QString name;
@@ -83,34 +89,20 @@ private:
     const QString imagePathKey = "image";
 };
 
-constexpr int Character::elementToInt(const CharacterElement element)
+constexpr int Character::elementToInt(const CharacterProperty element)
 {
    switch (element) {
-   case CharacterElement::AGE:
-       return static_cast<int>(CharacterElement::AGE);
+   case CharacterProperty::AGE:
+   case CharacterProperty::NAME:
+   case CharacterProperty::BACKSTORY:
+   case CharacterProperty::DESCRIPTION:
+   case CharacterProperty::NOTES:
+   case CharacterProperty::PROFESSION:
+   case CharacterProperty::RACE:
+   case CharacterProperty::IMAGEPATH:
+        return static_cast<int>(element);
 
-   case CharacterElement::NAME:
-       return static_cast<int>(CharacterElement::NAME);
-
-   case CharacterElement::BACKSTORY:
-       return static_cast<int>(CharacterElement::BACKSTORY);
-
-   case CharacterElement::DESCRIPTION:
-       return static_cast<int>(CharacterElement::DESCRIPTION);
-
-   case CharacterElement::NOTES:
-       return static_cast<int>(CharacterElement::NOTES);
-
-   case CharacterElement::PROFESSION:
-       return static_cast<int>(CharacterElement::PROFESSION);
-
-   case CharacterElement::RACE:
-       return static_cast<int>(CharacterElement::RACE);
-
-   case CharacterElement::IMAGEPATH:
-       return static_cast<int>(CharacterElement::IMAGEPATH);
    default:
-
        return -1;
    }
 }

@@ -3,7 +3,8 @@
 
 #include "campaigninfo.h"
 #include "character.h"
-#include "charactersmodel.h"
+#include "location.h"
+#include "gmnobjectmodel.h"
 
 #include <QAbstractItemView>
 #include <QObject>
@@ -12,6 +13,8 @@
 
 class Campaign : public QObject
 {
+    using CharacterModelType = std::unique_ptr<GMNObjectModel<Character>>;
+    using LocationModelType = std::unique_ptr<GMNObjectModel<Location>>;
     Q_OBJECT
 public:
     Campaign(QObject *parent = nullptr);
@@ -25,12 +28,14 @@ public:
     void loadFromName(const QString &name);
     void loadFromPath(const QString &path);
 
-    void saveToFile(const std::unique_ptr<CharactersModel>& charactersModel = nullptr);
+    void saveToFile(const CharacterModelType& charactersModel = nullptr, const LocationModelType& locationsModel = nullptr);
     void saveInfoFile();
-    void saveCharactersToFile(const std::unique_ptr<CharactersModel>& charactersModel);
+    void saveCharactersToFile(const CharacterModelType& charactersModel);
+    void saveLocationsToFile(const LocationModelType& locationsModel);
 
 
-    std::unique_ptr<CharactersModel> createCharactersModel() const;
+    CharacterModelType createCharactersModel() const;
+    LocationModelType createLocationsModel() const;
     QString getPath() const;
     QDir getDir() const;
 

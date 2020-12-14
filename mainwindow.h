@@ -35,12 +35,17 @@ protected slots:
 
 private slots:
     void onCharacterSelectionChanged(const QModelIndex& index, const QModelIndex &previousIndex = QModelIndex());
+    void onLocationSelectionChanged(const QModelIndex& index, const QModelIndex &previousIndex = QModelIndex());
     void onCharactersSearchTextChanged(const QString& text);
+    void onLocationsSearchTextChanged(const QString& text);
     void removeCharacter();
+    void removeLocation();
     void addCharacter();
+    void addLocation();
     void saveCampaign();
     void chooseCharacterImage();
     void setCharacterChanged();
+    void setLocationChanged();
     void showAboutApp();
     void showAboutQt();
 
@@ -48,19 +53,30 @@ private slots:
 private:
     Ui::MainWindow *ui;
     Campaign campaign;
-    std::unique_ptr<CharactersModel> charactersModel;
+    std::unique_ptr<GMNObjectModel<Character>> charactersModel;
+    std::unique_ptr<GMNObjectModel<Location>> locationsModel;
     QSortFilterProxyModel charactersFilterModel;
+    QSortFilterProxyModel locationsFilterModel;
     bool characterChanged = false;
+    bool locationChanged = false;
     bool campaignChanged = false;
     bool savingView = false;
 
     void configureCharactersListView();
+    void configureLocationsListView();
     void selectFirstCharacter();
+    void selectFirstLocation();
     void showCharacter(const Character& character);
+    void showLocation(const Location& location);
     void clearCharacterView();
+    void clearLocationView();
     void disableCharacterView();
+    void disableLocationView();
     void enableCharacterView();
+    void enableLocationView();
     void setDisabledCharacterView(const bool disabled);
+    void setDisabledLocationView(const bool disabled);
     void saveCurrentViewToCharacter(const QModelIndex& index);
+    void saveCurrentViewToLocation(const QModelIndex& index);
 };
 #endif // MAINWINDOW_H
