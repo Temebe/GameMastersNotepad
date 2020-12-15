@@ -6,7 +6,6 @@
 #include "location.h"
 #include "gmnobjectmodel.h"
 
-#include <QAbstractItemView>
 #include <QObject>
 
 #include <memory>

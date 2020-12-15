@@ -1,6 +1,4 @@
-QT       += core gui
-
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT       += core quick
 
 CONFIG += c++17
 
@@ -12,36 +10,32 @@ SOURCES += \
     campaign.cpp \
     campaigninfo.cpp \
     character.cpp \
-    clickableimagelabel.cpp \
     gmnobject.cpp \
     gmnobjectmodel.tpp \
     location.cpp \
-    locationmodel.cpp \
-    main.cpp \
-    mainwindow.cpp \
-    welcomedialog.cpp
+    main.cpp
 
 HEADERS += \
     campaign.h \
     campaigninfo.h \
     character.h \
-    clickableimagelabel.h \
     gmnobject.h \
     gmnobjectmodel.h \
     gmnpaths.h \
     gmnserializable.h \
     gmnutils.h \
-    location.h \
-    locationmodel.h \
-    mainwindow.h \
-    welcomedialog.h
+    location.h
 
-FORMS += \
-    mainwindow.ui \
-    welcomedialog.ui
+FORMS +=
 
 TRANSLATIONS += \
     GameMastersNotepad_pl_PL.ts
+
+# Additional import path used to resolve QML modules in Qt Creator's code model
+QML_IMPORT_PATH =
+
+# Additional import path used to resolve QML modules just for Qt Quick Designer
+QML_DESIGNER_IMPORT_PATH =
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin
@@ -49,4 +43,5 @@ else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
 
 RESOURCES += \
+    qml.qrc \
     resources.qrc

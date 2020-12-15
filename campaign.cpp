@@ -10,7 +10,6 @@
 #include <QJsonDocument>
 #include <QJsonObject>
 #include <QDateTime>
-#include <QMessageBox>
 #include <QTextStream>
 #include <QDir>
 

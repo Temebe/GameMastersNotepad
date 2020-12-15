@@ -2,4 +2,5 @@
     <qresource prefix="/images">
         <file>nopic.png</file>
     </qresource>
+    <qresource prefix="/"/>
 </RCC>

@@ -1,24 +1,25 @@
-#include "mainwindow.h"
-#include "welcomedialog.h"
 #include "campaign.h"
 
-#include <QApplication>
+#include <QGuiApplication>
+#include <QQmlApplicationEngine>
+
 
 int main(int argc, char *argv[])
 {
-    QApplication a(argc, argv);
-    a.setApplicationName("Game Master's Notepad");
-    a.setApplicationVersion("0.1.1");
-    MainWindow w;
-    Campaign campaign;
-    WelcomeDialog welcomeDialog;
-    welcomeDialog.show();
+    QCoreApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
-    w.init();
-    QObject::connect(&w, &MainWindow::windowReady, &welcomeDialog, &WelcomeDialog::closeWindow);
-    QObject::connect(&w, &MainWindow::loadingErrorOccured, &welcomeDialog, &WelcomeDialog::showCampaignLoadError);
-    QObject::connect(&welcomeDialog, &WelcomeDialog::newCampaignChosen, &w, &MainWindow::createNewCampaign);
-    QObject::connect(&welcomeDialog, &WelcomeDialog::loadCampaignChosen, &w, &MainWindow::loadCampaign);
+    QGuiApplication app(argc, argv);
+    app.setApplicationName("Game Master's Notepad");
+    app.setApplicationVersion("0.1.1");
 
-    return a.exec();
+    QQmlApplicationEngine engine;
+    const QUrl url(QStringLiteral("qrc:/main.qml"));
+    QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,
+                     &app, [url](QObject *obj, const QUrl &objUrl) {
+        if (!obj && url == objUrl)
+            QCoreApplication::exit(-1);
+    }, Qt::QueuedConnection);
+    engine.load(url);
+
+    return app.exec();
 }
