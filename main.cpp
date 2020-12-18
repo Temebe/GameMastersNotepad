@@ -17,6 +17,9 @@ int main(int argc, char *argv[])
 
     qmlRegisterType<ViewController>("org.gmn.viewcontroller", 1, 0, "ViewController");
     qmlRegisterAnonymousType<QStringListModel>("org.gmn", 1);
+    qmlRegisterAnonymousType<GMNObjectModel<Character>>("org.gmn", 1);
+    qmlRegisterAnonymousType<GMNObjectModel<Location>>("org.gmn", 1);
+
     QQmlApplicationEngine engine;
     const QUrl url(QStringLiteral("qrc:/main.qml"));
     QObject::connect(&engine, &QQmlApplicationEngine::objectCreated,

@@ -3,5 +3,7 @@
         <file>main.qml</file>
         <file>WelcomeView.qml</file>
         <file>ObjectSelectionBar.qml</file>
+        <file>LabeledTextField.qml</file>
+        <file>LabeledTextArea.qml</file>
     </qresource>
 </RCC>

@@ -122,11 +122,19 @@ bool GMNObjectModel<T>::removeRows(int position, int rows, const QModelIndex &in
 }
 
 template<typename T>
+QHash<int, QByteArray> GMNObjectModel<T>::roleNames() const {
+    QHash<int, QByteArray> roles;
+    roles[Qt::DisplayRole] = "modelData";
+    return roles;
+}
+
+template<typename T>
 bool GMNObjectModel<T>::loadFromJsonDocument(const QJsonDocument &doc) {
-    if (!doc.isArray()) {
+    if (!doc.isArray() || !collection.empty()) {
         return false;
     }
 
+    std::vector<T> newCollection;
     auto array = doc.array();
     for (const auto& value : array) {
         if (!value.isObject()) {
@@ -136,9 +144,19 @@ bool GMNObjectModel<T>::loadFromJsonDocument(const QJsonDocument &doc) {
         T newObject;
         auto doc = QJsonDocument(value.toObject());
         if (newObject.loadFromJsonDocument(doc)) {
-            collection.push_back(newObject);
+            newCollection.push_back(newObject);
         }
     }
+
+    if (newCollection.empty()) {
+        return true;
+    }
+
+    beginInsertRows(QModelIndex(), 0, newCollection.size() - 1);
+
+    collection = std::move(newCollection);
+
+    endInsertRows();
     return true;
 }
 

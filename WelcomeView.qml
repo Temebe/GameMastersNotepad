@@ -6,7 +6,7 @@ import org.gmn.viewcontroller 1.0
 
 Rectangle {
     id: welcomeView
-    property var campaignsListModel: []
+    property alias campaignsListModel: campaignsListView.model
 
     signal campaignChosen(string name)
     signal createCampaignChosen()
@@ -30,16 +30,16 @@ Rectangle {
         
         Rectangle {
             id: campaignsList
-            border.width: 1
+            border.width: 3
             Layout.fillWidth: true
             Layout.fillHeight: true
+            color: "#a52b2b"
             
             ListView {
                 id: campaignsListView
                 anchors.fill: parent
-                anchors.margins: 0
+                anchors.margins: parent.border.width
                 clip: true
-                model: welcomeView.campaignsListModel
                 
                 delegate: ItemDelegate {
                     width: parent.width
@@ -53,6 +53,12 @@ Rectangle {
                         fontSizeMode: Text.Fit
                         font.pointSize: 32
                         minimumPointSize: 10
+                    }
+
+                    background: Rectangle {
+                        implicitHeight: 40
+                        implicitWidth: 100
+                        color: index % 2 == 0 ? "#a6905a" : "#a39676"
                     }
 
                 }

@@ -88,7 +88,7 @@ void Campaign::loadFromPath(const QString &path)
     emit succesfullyLoaded();
 }
 
-void Campaign::saveToFile(const CharacterModelType &charactersModel, const LocationModelType &locationsModel)
+void Campaign::saveToFile(const CharacterModelTypePtr &charactersModel, const LocationModelTypePtr &locationsModel)
 {
     QDir().mkpath(path);
     QDir().mkpath(path + "/" + GMN::imagesFolderName);
@@ -106,7 +106,7 @@ void Campaign::saveInfoFile()
     }
 }
 
-void Campaign::saveCharactersToFile(const CharacterModelType &charactersModel)
+void Campaign::saveCharactersToFile(const CharacterModelTypePtr &charactersModel)
 {
     QString serializedCharacters = charactersModel ? charactersModel->toJsonString() : GMNObjectModel<Character>().toJsonString();
     QString savePath(path + "/" + GMN::charactersFileName);
@@ -115,7 +115,7 @@ void Campaign::saveCharactersToFile(const CharacterModelType &charactersModel)
     }
 }
 
-void Campaign::saveLocationsToFile(const Campaign::LocationModelType &locationsModel)
+void Campaign::saveLocationsToFile(const LocationModelTypePtr &locationsModel)
 {
     QString serializedLocations = locationsModel ? locationsModel->toJsonString() : GMNObjectModel<Location>().toJsonString();
     QString savePath(path + "/" + GMN::locationsFileName);
@@ -124,7 +124,7 @@ void Campaign::saveLocationsToFile(const Campaign::LocationModelType &locationsM
     }
 }
 
-Campaign::CharacterModelType Campaign::createCharactersModel() const
+CharacterModelTypePtr Campaign::createCharactersModel() const
 {
     auto model = std::make_unique<GMNObjectModel<Character>>();
     std::optional<QString> charactersFile = GMN::loadJsonFile(path + "/" + GMN::charactersFileName);
@@ -136,7 +136,7 @@ Campaign::CharacterModelType Campaign::createCharactersModel() const
     return model;
 }
 
-Campaign::LocationModelType Campaign::createLocationsModel() const
+LocationModelTypePtr Campaign::createLocationsModel() const
 {
     auto model = std::make_unique<GMNObjectModel<Location>>();
     std::optional<QString> locationFile = GMN::loadJsonFile(path + "/" + GMN::locationsFileName);
@@ -146,6 +146,24 @@ Campaign::LocationModelType Campaign::createLocationsModel() const
     }
 
     return model;
+}
+
+void Campaign::prepareCharactersModel(GMNObjectModel<Character> &model)
+{
+    std::optional<QString> charactersFile = GMN::loadJsonFile(path + "/" + GMN::charactersFileName);
+
+    if (charactersFile) {
+        model.loadFromJson(charactersFile.value().toUtf8());
+    }
+}
+
+void Campaign::prepareLocationsModel(GMNObjectModel<Location> &model)
+{
+    std::optional<QString> locationFile = GMN::loadJsonFile(path + "/" + GMN::locationsFileName);
+
+    if (locationFile) {
+        model.loadFromJson(locationFile.value().toUtf8());
+    }
 }
 
 QString Campaign::getPath() const

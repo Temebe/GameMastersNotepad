@@ -11,10 +11,11 @@
 
 #include <memory>
 
+using CharacterModelTypePtr = std::unique_ptr<GMNObjectModel<Character>>;
+using LocationModelTypePtr = std::unique_ptr<GMNObjectModel<Location>>;
+
 class Campaign : public QObject
 {
-    using CharacterModelType = std::unique_ptr<GMNObjectModel<Character>>;
-    using LocationModelType = std::unique_ptr<GMNObjectModel<Location>>;
     Q_OBJECT
 public:
     Campaign(QObject *parent = nullptr);
@@ -28,14 +29,16 @@ public:
     void loadFromName(const QString &name);
     void loadFromPath(const QString &path);
 
-    void saveToFile(const CharacterModelType& charactersModel = nullptr, const LocationModelType& locationsModel = nullptr);
+    void saveToFile(const CharacterModelTypePtr& charactersModel = nullptr, const LocationModelTypePtr& locationsModel = nullptr);
     void saveInfoFile();
-    void saveCharactersToFile(const CharacterModelType& charactersModel);
-    void saveLocationsToFile(const LocationModelType& locationsModel);
+    void saveCharactersToFile(const CharacterModelTypePtr& charactersModel);
+    void saveLocationsToFile(const LocationModelTypePtr& locationsModel);
 
 
-    CharacterModelType createCharactersModel() const;
-    LocationModelType createLocationsModel() const;
+    CharacterModelTypePtr createCharactersModel() const;
+    LocationModelTypePtr createLocationsModel() const;
+    void prepareCharactersModel(GMNObjectModel<Character>& model);
+    void prepareLocationsModel(GMNObjectModel<Location>& model);
 
 //    template<typename T>
 //    void fillModel(const QString &modelFilePath, GMNObjectModel<T>& model) const {

@@ -5,11 +5,14 @@ import QtQuick.Layouts 1.12
 import org.gmn.viewcontroller 1.0
 
 Rectangle {
-    id: objectSelectionBox
+    id: objectSelectionBar
     implicitHeight: objectsRowLayout.implicitHeight + 12
     color: "gray"
     
-    property var model: ["A", "B", "C", "D"]
+    property var model: []
+    property alias currentIndex: objectsComboBox.currentIndex
+    property alias objectsCount: objectsComboBox.count
+    property var properIndexSelected: characterSelectionBar.currentIndex >= 0 && characterSelectionBar.currentIndex < characterSelectionBar.objectsCount
     
     signal objectActivated(int index)
     signal addObjectClicked()
@@ -22,8 +25,8 @@ Rectangle {
         ComboBox {
             id: objectsComboBox
             Layout.fillWidth: true
-            model: characterTab.model
-            onActivated: characterTab.objectActivated(index)
+            model: objectSelectionBar.model
+            onActivated: objectSelectionBar.objectActivated(index)
         }
         
         ColumnLayout {
@@ -34,16 +37,21 @@ Rectangle {
                 text: "Add character"
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
                 Layout.preferredWidth: parent.buttonsColumnWidth
-                onClicked: characterTab.addObjectClicked()
+                onClicked: {
+                    objectSelectionBar.addObjectClicked()
+                    objectsComboBox.currentIndex = objectsComboBox.count - 1
+                }
             }
             
             Button {
                 id: removeObjectButton
                 text: "Remove Character"
                 Layout.alignment: Qt.AlignHCenter | Qt.AlignVCenter
-                enabled: objectsComboBox.count > 0
+                enabled: objectsComboBox.currentIndex != -1
                 Layout.preferredWidth: parent.buttonsColumnWidth
-                onClicked: characterTab.removeObjectClicked()
+                onClicked: {
+                    objectSelectionBar.removeObjectClicked()
+                }
             }
         }
     }
