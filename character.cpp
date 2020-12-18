@@ -9,7 +9,7 @@ Character::Character(const Character &other)
     setAge(other.getAge());
     setBackstory(other.getBackstory());
     setDescription(other.getDescription());
-    setName(other.getName());
+    name = other.getName();
     setNotes(other.getNotes());
     setProfession(other.getProfession());
     setRace(other.getRace());

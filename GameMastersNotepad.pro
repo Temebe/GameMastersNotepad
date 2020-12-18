@@ -16,7 +16,6 @@ SOURCES += \
     gmnobject.cpp \
     gmnobjectmodel.tpp \
     location.cpp \
-    locationmodel.cpp \
     main.cpp \
     mainwindow.cpp \
     welcomedialog.cpp
@@ -32,7 +31,6 @@ HEADERS += \
     gmnserializable.h \
     gmnutils.h \
     location.h \
-    locationmodel.h \
     mainwindow.h \
     welcomedialog.h
 

@@ -122,11 +122,9 @@ void WelcomeDialog::configureTableView()
 {
     ui->campaignsTableView->setModel(&campaignsModel);
     auto header = ui->campaignsTableView->horizontalHeader();
-
     campaignsModel.setHorizontalHeaderItem(0, new QStandardItem(tr("Name")));
-    header->setSectionResizeMode(0, QHeaderView::Stretch);
     campaignsModel.setHorizontalHeaderItem(1, new QStandardItem(tr("Created")));
-    header->setSectionResizeMode(1, QHeaderView::ResizeToContents);
     campaignsModel.setHorizontalHeaderItem(2, new QStandardItem(tr("Last opened")));
-    header->setSectionResizeMode(2, QHeaderView::ResizeToContents);
+    header->setSectionResizeMode(QHeaderView::Interactive);
+    header->setStretchLastSection(true);
 }
