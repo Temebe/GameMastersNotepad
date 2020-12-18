@@ -5,6 +5,7 @@
 #include "character.h"
 #include "location.h"
 #include "gmnobjectmodel.h"
+//#include "gmnutils.h"
 
 #include <QObject>
 
@@ -35,6 +36,15 @@ public:
 
     CharacterModelType createCharactersModel() const;
     LocationModelType createLocationsModel() const;
+
+//    template<typename T>
+//    void fillModel(const QString &modelFilePath, GMNObjectModel<T>& model) const {
+//        std::optional<QString> jsonFile = GMN::loadJsonFile(modelFilePath);
+//        if (jsonFile) {
+//            model.loadFromJson(jsonFile.value().toUtf8());
+//        }
+//    }
+
     QString getPath() const;
     QDir getDir() const;
 

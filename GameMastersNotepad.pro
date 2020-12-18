@@ -13,7 +13,8 @@ SOURCES += \
     gmnobject.cpp \
     gmnobjectmodel.tpp \
     location.cpp \
-    main.cpp
+    main.cpp \
+    viewcontroller.cpp
 
 HEADERS += \
     campaign.h \
@@ -24,7 +25,8 @@ HEADERS += \
     gmnpaths.h \
     gmnserializable.h \
     gmnutils.h \
-    location.h
+    location.h \
+    viewcontroller.h
 
 FORMS +=
 
