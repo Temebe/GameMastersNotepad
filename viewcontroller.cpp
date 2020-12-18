@@ -18,6 +18,11 @@ ViewController::ViewController(QObject *parent)
     connect(m_charactersModel.get(), &QAbstractItemModel::dataChanged, this, &ViewController::charactersUpdated);
 }
 
+ViewController::~ViewController()
+{
+    saveCampaign();
+}
+
 int ViewController::getTestInt()
 {
     return 42;
@@ -57,6 +62,11 @@ QString ViewController::createImagePath(const QString &relativePath)
     return "file:" + imageFileInfo.canonicalFilePath();
 }
 
+QString ViewController::getCampaignImagesPath()
+{
+    return m_campaign.getPath() + "/" + GMN::imagesFolderName;
+}
+
 bool ViewController::isCampaignLoaded() const
 {
     return m_campaignLoaded;
@@ -80,6 +90,7 @@ void ViewController::configureCampaignView()
 
     m_campaignLoaded = true;
     emit campaignLoaded();
+    emit imagesPathChanged();
 }
 
 void ViewController::addCharacter()
@@ -100,6 +111,20 @@ void ViewController::addLocation()
 void ViewController::removeLocation(int index)
 {
     m_locationsModel->removeRow(index);
+}
+
+void ViewController::changeCharacterImage(const int index, QString imagePath)
+{
+    if (imagePath.startsWith("file:")) {
+        imagePath.remove(0, QString("file:").size());
+    }
+    auto modelIndex = m_charactersModel->index(index, Character::elementToInt(CharacterProperty::IMAGEPATH));
+    m_charactersModel->setData(modelIndex, m_campaign.getDir().relativeFilePath(imagePath));
+}
+
+void ViewController::saveCampaign()
+{
+    m_campaign.saveToFile(m_charactersModel, m_locationsModel);
 }
 
 GMNObjectModel<Location>* ViewController::getLocationsModel()

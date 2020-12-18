@@ -55,6 +55,7 @@ signals:
     void succesfullyLoaded();
     void loadingFailed(const QString& reason, const QString& details = QString());
     void savingFailed(const QString& reason, const QString& details = QString());
+    void pathChanged();
 
 private:
     CampaignInfo campaignInfo;

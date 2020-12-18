@@ -9,7 +9,7 @@ Window {
     width: 480
     height: 854
     visible: true
-    title: qsTr("Hello World")
+    title: qsTr("Game Master's Notepad")
 
     ViewController {
         id: controller
@@ -116,7 +116,13 @@ Window {
                         setData(4, textAreaBackstory.text)
                         setData(5, textAreaNotes.text)
                         setData(6, textAreaDescription.text)
-                        //setData(7, textFieldCharacterName.text)
+                        controller.saveCampaign()
+                    }
+
+                    function refresh() {
+                        var temp = currentIndex
+                        currentIndex = -1
+                        currentIndex = temp
                     }
                 }
 
@@ -165,9 +171,17 @@ Window {
 
                             MouseArea {
                                 anchors.fill: parent
+                                enabled: characterSelectionBar.properIndexSelected
                                 onClicked: {
-
+                                    imageChooseDialog.open()
                                 }
+                            }
+
+                            Rectangle {
+                                anchors.fill: characterImage
+                                opacity: 0.9
+                                color: "black"
+                                visible: !characterSelectionBar.properIndexSelected
                             }
                         }
 
@@ -307,6 +321,16 @@ Window {
 
         contentChildren: Text {
             text: errorDialog.errorText
+        }
+    }
+
+    ImageFileDialog {
+        id: imageChooseDialog
+        folder: "file:" + controller.imagesPath
+
+        onAccepted: {
+            controller.changeCharacterImage(characterSelectionBar.currentIndex, fileUrl)
+            characterSelectionBar.refresh()
         }
     }
 

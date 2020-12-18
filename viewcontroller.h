@@ -13,11 +13,14 @@ class ViewController : public QObject
     Q_PROPERTY(bool campaignLoaded READ isCampaignLoaded NOTIFY campaignLoaded)
     Q_PROPERTY(QAbstractItemModel* charactersModel READ getCharactersModel NOTIFY charactersUpdated)
     Q_PROPERTY(QAbstractItemModel* locationsModel READ getLocationsModel NOTIFY locationsUpdated)
+    Q_PROPERTY(QString imagesPath READ getCampaignImagesPath NOTIFY imagesPathChanged)
 public:
     explicit ViewController(QObject *parent = nullptr);
+    ~ViewController();
     Q_INVOKABLE int getTestInt();
     Q_INVOKABLE QStringListModel* getCampaignsList();
     Q_INVOKABLE QString createImagePath(const QString& relativePath);
+    QString getCampaignImagesPath();
     GMNObjectModel<Character>* getCharactersModel();
     GMNObjectModel<Location>* getLocationsModel();
 
@@ -30,9 +33,11 @@ public slots:
     void createCampaign(const QString& campaignName);
     void configureCampaignView();
     void addCharacter();
-    void removeCharacter(int index);
+    void removeCharacter(const int index);
     void addLocation();
-    void removeLocation(int index);
+    void removeLocation(const int index);
+    void changeCharacterImage(const int index, QString imagePath);
+    void saveCampaign();
 
 
 signals:
@@ -40,6 +45,7 @@ signals:
     void errorOccured(const QString& title, const QString& message);
     void charactersUpdated();
     void locationsUpdated();
+    void imagesPathChanged();
 
 private:
     Campaign m_campaign;
