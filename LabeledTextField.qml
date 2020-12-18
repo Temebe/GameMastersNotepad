@@ -10,6 +10,7 @@ Column {
     
     Label {
         id: label
+        color: "#2e2e2e"
         font.pointSize: 16
     }
     

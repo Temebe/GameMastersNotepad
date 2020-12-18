@@ -6,5 +6,6 @@
         <file>LabeledTextField.qml</file>
         <file>LabeledTextArea.qml</file>
         <file>ImageFileDialog.qml</file>
+        <file>FramedImage.qml</file>
     </qresource>
 </RCC>

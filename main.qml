@@ -15,11 +15,6 @@ Window {
         id: controller
     }
 
-//    Rectangle {
-//        color: "green"
-//        anchors.fill: parent
-//    }
-
     Page {
         id: viewsPage
         anchors.fill: parent
@@ -147,41 +142,20 @@ Window {
                             anchors.horizontalCenter: parent.horizontalCenter
                             placeholderText: "Character name"
                             enabled: characterSelectionBar.properIndexSelected
+                            onTextEdited: {
+                                var index = controller.charactersModel.index(characterSelectionBar.currentIndex, 0)
+                                controller.charactersModel.setData(index, text)
+                            }
                         }
 
-                        Rectangle {
-                            width: characterImage.width * 1.1
-                            height: characterImage.height * 1.10
-                            radius: 10
+                        FramedImage {
+                            id: characterImage
                             anchors.horizontalCenter: parent.horizontalCenter
-                            color: "#6c5454"
+                            maxSize: charactersView.width > charactersView.height ? charactersView.height * 0.5 : charactersView.width * 0.5
+                            enabled: characterSelectionBar.properIndexSelected
 
-                            Image {
-                                property var maxSize: charactersView.width > charactersView.height ? charactersView.height * 0.5 : charactersView.width * 0.5
-
-                                id: characterImage
-                                source: "qrc:/images/nopic.png"
-                                anchors.centerIn: parent
-                                width: maxSize
-                                height: maxSize
-                                fillMode: Image.PreserveAspectFit
-
-
-                            }
-
-                            MouseArea {
-                                anchors.fill: parent
-                                enabled: characterSelectionBar.properIndexSelected
-                                onClicked: {
-                                    imageChooseDialog.open()
-                                }
-                            }
-
-                            Rectangle {
-                                anchors.fill: characterImage
-                                opacity: 0.9
-                                color: "black"
-                                visible: !characterSelectionBar.properIndexSelected
+                            onClicked: {
+                                imageChooseDialog.open()
                             }
                         }
 
@@ -210,6 +184,7 @@ Window {
                         LabeledTextArea {
                             id: textAreaBackstory
                             labelText: "Backstory"
+                            viewWidth: charactersView.width * 0.7
                             anchors.horizontalCenter: parent.horizontalCenter
                             enabled: characterSelectionBar.properIndexSelected
                         }
@@ -217,6 +192,7 @@ Window {
                         LabeledTextArea {
                             id: textAreaDescription
                             labelText: "Description"
+                            viewWidth: charactersView.width * 0.7
                             anchors.horizontalCenter: parent.horizontalCenter
                             enabled: characterSelectionBar.properIndexSelected
                         }
@@ -224,56 +200,118 @@ Window {
                         LabeledTextArea {
                             id: textAreaNotes
                             labelText: "Notes"
+                            viewWidth: charactersView.width * 0.7
                             anchors.horizontalCenter: parent.horizontalCenter
                             enabled: characterSelectionBar.properIndexSelected
                         }
                     }
-
-                        // TODO Why it does not work? Is this a good solution?
-//                    Rectangle {
-//                        anchors.fill: parent
-//                        opacity: 0.9
-//                        color: "black"
-//                        visible: !characterSelectionBar.properIndexSelected
-
-//                        //Just area for blocking input
-//                        MouseArea {
-//                            visible: parent.visible
-//                            anchors.fill: parent
-//                        }
-
-//                        Text {
-//                            anchors.fill: parent
-//                            horizontalAlignment: Text.AlignHCenter
-//                            verticalAlignment: Text.AlignVCenter
-//                            text: "Select character from list at the top or create a new one."
-//                            color: "white"
-//                            wrapMode: Text.WordWrap
-//                            fontSizeMode: Text.Fit
-//                            minimumPointSize: 10
-//                            font.pointSize: 50
-//                        }
-//                    }
                 }
             }
 
             Rectangle {
-                color: "#a5a5de"
+                color: "#7b7373"
                 id: locationTab
 
                 ObjectSelectionBar {
-                    id: locationSelectionBar
+                    id: locationsSelectionBar
                     anchors.left: parent.left
                     anchors.right: parent.right
                     anchors.top: parent.top
                     model: controller.locationsModel
+                    property var lastShownIndex: -1
 
-                    onObjectActivated: {}
+                    onCurrentIndexChanged: {
+                        saveView(lastShownIndex)
+                        if (currentIndex == -1) {
+                            clearView()
+                        } else {
+                            loadIndexToView(currentIndex)
+                        }
+                        lastShownIndex = currentIndex
+                    }
+
+                    onAddObjectClicked: {
+                        controller.addLocation()
+                        currentIndex = objectsCount - 1
+                    }
+
+                    onRemoveObjectClicked: {
+                        var indexToRemove = currentIndex
+                        currentIndex = -1
+                        controller.removeLocation(indexToRemove)
+                        currentIndex = objectsCount > 0 ? 0 : -1
+                    }
+
+                    function loadIndexToView(index) {
+                        var getData = (propertyIndex) => {
+                            return controller.locationsModel.data(controller.locationsModel.index(index, propertyIndex))
+                        }
+
+                        textFieldLocationName.text = getData(0)
+                        textAreaLocationNotes.text = getData(1)
+                    }
+
+                    function clearView() {
+                        textFieldLocationName.text = ""
+                        textAreaLocationNotes.text = ""
+                    }
+
+                    function saveView(index) {
+                        var setData = (propertyIndex, value) => {
+                            return controller.locationsModel.setData(controller.locationsModel.index(index, propertyIndex), value)
+                        }
+
+                        setData(0, textFieldLocationName.text)
+                        setData(1, textAreaLocationNotes.text)
+                        controller.saveCampaign()
+                    }
+
+                    function refresh() {
+                        var temp = currentIndex
+                        currentIndex = -1
+                        currentIndex = temp
+                    }
+                }
+
+                ScrollView {
+                    id: locationsView
+                    anchors.left: parent.left
+                    anchors.right: parent.right
+                    anchors.top: locationsSelectionBar.bottom
+                    anchors.bottom: parent.bottom
+                    contentWidth: -1
+                    anchors.topMargin: 0
+                    clip: true
+
+                    Column {
+                        anchors.fill: parent
+                        anchors.topMargin: 2
+                        spacing: 10
+
+                        TextField {
+                            id: textFieldLocationName
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            placeholderText: "Location name"
+                            enabled: locationsSelectionBar.properIndexSelected
+                            onTextEdited: {
+                                var index = controller.locationsModel.index(locationsSelectionBar.currentIndex, 0)
+                                controller.locationsModel.setData(index, text)
+                            }
+                        }
+
+                        LabeledTextArea {
+                            id: textAreaLocationNotes
+                            labelText: "Notes"
+                            viewWidth: charactersView.width * 0.7
+                            anchors.horizontalCenter: parent.horizontalCenter
+                            enabled: locationsSelectionBar.properIndexSelected
+                        }
+                    }
                 }
             }
-
         }
     }
+
     WelcomeView {
         id: welcomeView
         anchors.fill: parent
@@ -291,23 +329,33 @@ Window {
         }
     }
 
-
-
-
     Dialog {
         id: createCampaignDialog
         anchors.centerIn: parent
         title: "Input name of campaign"
-        standardButtons: Dialog.Ok | Dialog.Cancel
         contentChildren: TextField {
             id: campaignNameTextField
             placeholderText: "i.e. \"Lord of the Kings\""
         }
 
+
         onAccepted: {
             var campaignName = campaignNameTextField.text
             campaignNameTextField.text = ""
-            controller.loadCampaign(campaignName)
+            controller.createCampaign(campaignName)
+        }
+
+        footer: DialogButtonBox {
+            Button {
+                id: okButton
+                enabled: campaignNameTextField.text != ""
+                text: qsTr("Ok")
+                DialogButtonBox.buttonRole: DialogButtonBox.AcceptRole
+            }
+            Button {
+                text: qsTr("Cancel")
+                DialogButtonBox.buttonRole: DialogButtonBox.DestructiveRole
+            }
         }
     }
 
@@ -334,10 +382,30 @@ Window {
         }
     }
 
+    Shortcut {
+        sequence: StandardKey.Save
+        onActivated: save()
+        context: Qt.ApplicationShortcut
+    }
+
+    // Autosave
+    Timer {
+        interval: 10000
+        repeat: true
+        running: controller.campaignLoaded
+        onTriggered: save()
+    }
+
     function showError(title, message) {
         errorDialog.title = title
         errorDialog.errorText = message
         errorDialog.open()
+    }
+
+    function save() {
+        characterSelectionBar.saveView(characterSelectionBar.currentIndex)
+        locationsSelectionBar.saveView(locationsSelectionBar.currentIndex)
+        controller.saveCampaign()
     }
 
     Component.onCompleted: {

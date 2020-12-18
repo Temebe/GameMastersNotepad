@@ -67,7 +67,7 @@ bool GMNObjectModel<T>::setData(const QModelIndex &index, const QVariant &value,
         return false;
     }
 
-    emit dataChanged(index, index, {Qt::DisplayRole, Qt::EditRole});
+    emit dataChanged(index, index);
     return true;
 }
 

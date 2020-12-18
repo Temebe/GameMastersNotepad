@@ -9,10 +9,10 @@ Rectangle {
     implicitHeight: objectsRowLayout.implicitHeight + 12
     color: "gray"
     
-    property var model: []
+    property alias model: objectsComboBox.model
     property alias currentIndex: objectsComboBox.currentIndex
     property alias objectsCount: objectsComboBox.count
-    property var properIndexSelected: characterSelectionBar.currentIndex >= 0 && characterSelectionBar.currentIndex < characterSelectionBar.objectsCount
+    property var properIndexSelected: objectSelectionBar.currentIndex >= 0 && objectSelectionBar.currentIndex < objectSelectionBar.objectsCount
     
     signal objectActivated(int index)
     signal addObjectClicked()
@@ -25,8 +25,8 @@ Rectangle {
         ComboBox {
             id: objectsComboBox
             Layout.fillWidth: true
-            model: objectSelectionBar.model
             onActivated: objectSelectionBar.objectActivated(index)
+            textRole: "modelData"
         }
         
         ColumnLayout {

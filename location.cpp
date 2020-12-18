@@ -2,7 +2,7 @@
 
 Location::Location(const Location &other)
 {
-    setName(other.getName());
+    name = other.getName();
     setNotes(other.getNotes());
 }
 

@@ -7,14 +7,16 @@ import org.gmn.viewcontroller 1.0
 Column {
     property alias labelText: label.text
     property alias text: textArea.text
+    property alias viewWidth: scrollView.width
 
     Label {
         id: label
         font.pointSize: 16
+        color: "#2e2e2e"
     }
     
     ScrollView {
-        width: charactersView.width * 0.7
+        id: scrollView
         height: 300
         contentWidth: -1
         contentHeight: -1
